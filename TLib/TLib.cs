@@ -74,6 +74,19 @@ namespace IngameScript
             }
         }
 
+        public bool getConfig(MyIni ini, string section, string key, bool defaultvalue)
+        {
+            if (ini.ContainsKey(section, key))
+            {
+                return ini.Get(section, key).ToBoolean(defaultvalue);
+            }
+            else
+            {
+                ini.Set(section, key, defaultvalue);
+                return defaultvalue;
+            }
+        }
+
         public void saveConfig(IMyTerminalBlock block, MyIni ini)
         {
             block.CustomData = ini.ToString();
