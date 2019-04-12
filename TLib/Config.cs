@@ -147,9 +147,9 @@ namespace IngameScript
         /// <param name="start">A <see cref="IMyTerminalBlock"/>, <see cref="MyIni"/>, or string</param>
         /// <param name="section">The name of the section to use.</param>
         /// <returns>A <see cref="ConfigSection"/></returns>
-        static ConfigSection Section(IMyTerminalBlock start, string section) => new Config(start).Section(section);
-        static ConfigSection Section(MyIni start, string section) => new Config(start).Section(section);
-        static ConfigSection Section(string start, string section) => new Config(start).Section(section);
+        public static ConfigSection Section(IMyTerminalBlock start, string section) => new Config(start).Section(section);
+        public static ConfigSection Section(MyIni start, string section) => new Config(start).Section(section);
+        public static ConfigSection Section(string start, string section) => new Config(start).Section(section);
 
         /// <summary>
         /// Parse configuration from a terminal block.
