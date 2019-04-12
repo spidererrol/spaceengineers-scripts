@@ -94,10 +94,10 @@ namespace IngameScript
                 isSealed = !isSealed;
             foreach (IMyInteriorLight light in lights)
             {
-                MyIni ini = getConfig(light);
-                string sSealedColor = getConfig(ini, "EDC", "SealedColor", "Off");
-                string sLeakColor = getConfig(ini, "EDC", "LeakColor", "On");
-                saveConfig(light, ini);
+                Config.ConfigSection sec = new Config.ConfigSection(light,"EDC");
+                string sSealedColor = sec.Get("SealedColor", "Off");
+                string sLeakColor = sec.Get("LeakColor", "On");
+                sec.Save();
                 string sTargetColor = isSealed ? sSealedColor : sLeakColor;
                 sTargetColor = sTargetColor.ToLower();
                 if (sTargetColor == "on")
@@ -114,13 +114,13 @@ namespace IngameScript
 
         public void Main(string argument)
         {
-            MyIni config = getConfig(Me);
-            OpenSeconds = getConfig(config, "EDC", "OpenSeconds", OpenSeconds);
-            string prefix = getConfig(config, "EDC", "Prefix", "[#");
-            string suffix = getConfig(config, "EDC", "Suffix", "]");
-            saveConfig(Me, config);
+            Config.ConfigSection config = new Config(Me).Section("EDC");
+            OpenSeconds = config.Get("OpenSeconds", OpenSeconds);
+            string prefix = config.Get("Prefix", "[#");
+            string suffix = config.Get("Suffix", "]");
+            config.Save();
 
-            string sTags = System.Text.RegularExpressions.Regex.Escape(prefix) + @"([^!\]]+)(!?)" + System.Text.RegularExpressions.Regex.Escape(suffix);
+            string sTags = System.Text.RegularExpressions.Regex.Escape(prefix) + @"(.+?)(!?)" + System.Text.RegularExpressions.Regex.Escape(suffix);
             System.Text.RegularExpressions.Regex reTags = new System.Text.RegularExpressions.Regex(sTags);
 
             InitSurface();
@@ -246,6 +246,10 @@ namespace IngameScript
                     if (match.Groups[2].Captures[0].Value != "!")
                         doOpen = true;
                 }
+                Config.ConfigSection doorini = new Config.ConfigSection(door,"EDC");
+                doOpen = !doorini.Get("StayClosed", !doOpen);
+                doorini.Save();
+
                 if (!doorState.ContainsKey(door.Position))
                     doorState.Add(door.Position, door.Status);
                 if (doorState[door.Position] == DoorStatus.Closing || doorState[door.Position] == DoorStatus.Opening)
