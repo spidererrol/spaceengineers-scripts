@@ -29,69 +29,7 @@ namespace IngameScript
             "Stored power: (\\d+\\.?\\d*) (\\w?)Wh",
         System.Text.RegularExpressions.RegexOptions.Singleline);
 
-        public MyIni getConfig(IMyTerminalBlock block, MyIni defaultConfig = null)
-        {
-            MyIni ini = new MyIni();
-            if (block.CustomData.Length == 0 && defaultConfig != null)
-            {
-                block.CustomData = defaultConfig.ToString();
-            }
-            ini.TryParse(block.CustomData);
-            return ini;
-        }
-
-        public MyIni getConfig(IMyTerminalBlock block, string defaultConfig)
-        {
-            MyIni defaultIni = new MyIni();
-            if (!defaultIni.TryParse(defaultConfig))
-                throw new Exception("Unable to parse default configuration");
-            return getConfig(block, defaultIni);
-        }
-
-        public string getConfig(MyIni ini, string section, string key, string defaultvalue)
-        {
-            if (ini.ContainsKey(section, key))
-            {
-                return ini.Get(section, key).ToString();
-            }
-            else
-            {
-                ini.Set(section, key, defaultvalue);
-                return defaultvalue;
-            }
-        }
-
-        public int getConfig(MyIni ini, string section, string key, int defaultvalue)
-        {
-            if (ini.ContainsKey(section, key))
-            {
-                return ini.Get(section, key).ToInt32();
-            }
-            else
-            {
-                ini.Set(section, key, defaultvalue);
-                return defaultvalue;
-            }
-        }
-
-        public bool getConfig(MyIni ini, string section, string key, bool defaultvalue)
-        {
-            if (ini.ContainsKey(section, key))
-            {
-                return ini.Get(section, key).ToBoolean(defaultvalue);
-            }
-            else
-            {
-                ini.Set(section, key, defaultvalue);
-                return defaultvalue;
-            }
-        }
-
-        public void saveConfig(IMyTerminalBlock block, MyIni ini)
-        {
-            block.CustomData = ini.ToString();
-        }
-
+  
         public void UpdateDict<keyType, valType>(IDictionary<keyType, valType> dict, keyType key, valType val)
         {
             if (dict.ContainsKey(key))
