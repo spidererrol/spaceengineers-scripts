@@ -9,6 +9,7 @@
     <Import_RootNamespace>TLib</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Config.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TLib.cs" />
   </ItemGroup>
 </Project>
