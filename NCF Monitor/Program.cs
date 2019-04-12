@@ -36,22 +36,10 @@ namespace IngameScript
 
         public void Main(string realargument)
         {
-
-            MyIni ini = new MyIni();
-            if (Me.CustomData.Length == 0)
-            {
-                ini.Set("NCF Monitor", "Tag", NaniteTag);
-                Me.CustomData = ini.ToString();
-            }
-            else if (ini.TryParse(Me.CustomData))
-            {
-                MyIniValue newTag = ini.Get("NCF Monitor", "Tag");
-                if (!newTag.IsEmpty)
-                {
-                    NaniteTag = newTag.ToString();
-                }
-            }
-
+            Config.ConfigSection config = Config.Section(Me, "NCF Monitor");
+            config.Update("Tag", ref NaniteTag);
+            config.Save();
+            
             var nf = GridTerminalSystem.GetBlockWithName("Nanite Control Factory - " + NaniteTag) as IMyTerminalBlock;
             Echo("Find NF");
             string[] NFStat = { "" };
