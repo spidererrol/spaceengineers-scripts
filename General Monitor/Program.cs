@@ -101,16 +101,20 @@ namespace IngameScript
             percentScreen(screens, (float)(100.0f * fill));
         }
 
+        void test(ref string myvar)
+        {
+            myvar = myvar + "!!";
+        }
+
         void Main(string arg)
         {
-
-            MyIni config = getConfig(Me);
-            lcdName = getConfig(config, configSection, "Battery LCD", lcdName);
-            lcd2Name = getConfig(config, configSection, "Battery Rates LCD", lcd2Name);
-            lcdH2 = getConfig(config, configSection, "Hydrogen LCD", lcdH2);
-            lcdO2 = getConfig(config, configSection, "Oxygen LCD", lcdO2);
-            imagePrefix = getConfig(config, configSection, "Image Prefix", imagePrefix);
-            Me.CustomData = config.ToString();
+            Config.ConfigSection config = Config.Section(Me, configSection);
+            config.Update("Battery LCD", ref lcdName);
+            config.Update("Battery Rates LCD", ref lcd2Name);
+            config.Update("Hydrogen LCD", ref lcdH2);
+            config.Update("Oxygen LCD", ref lcdO2);
+            config.Update("Image Prefix", ref imagePrefix);
+            config.Save();
 
             List<IMyTextPanel> screens = getObjectsByName<IMyTextPanel>(lcdName);
             List<IMyTextPanel> screens2 = getObjectsByName<IMyTextPanel>(lcd2Name);
