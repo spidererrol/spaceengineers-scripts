@@ -94,7 +94,7 @@ namespace IngameScript
                 isSealed = !isSealed;
             foreach (IMyInteriorLight light in lights)
             {
-                Config.ConfigSection sec = new Config.ConfigSection(light,"EDC");
+                Config.ConfigSection sec = Config.Section(light,"EDC");
                 string sSealedColor = sec.Get("SealedColor", "Off");
                 string sLeakColor = sec.Get("LeakColor", "On");
                 sec.Save();
@@ -114,7 +114,7 @@ namespace IngameScript
 
         public void Main(string argument)
         {
-            Config.ConfigSection config = new Config(Me).Section("EDC");
+            Config.ConfigSection config = Config.Section(Me,"EDC");
             OpenSeconds = config.Get("OpenSeconds", OpenSeconds);
             string prefix = config.Get("Prefix", "[#");
             string suffix = config.Get("Suffix", "]");
@@ -246,7 +246,7 @@ namespace IngameScript
                     if (match.Groups[2].Captures[0].Value != "!")
                         doOpen = true;
                 }
-                Config.ConfigSection doorini = new Config.ConfigSection(door,"EDC");
+                Config.ConfigSection doorini = Config.Section(door,"EDC");
                 doOpen = !doorini.Get("StayClosed", !doOpen);
                 doorini.Save();
 
