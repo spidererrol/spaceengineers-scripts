@@ -23,8 +23,16 @@ namespace IngameScript
     {
 
         /// <summary>
+        /// Section name to use when reading config from Custom Data.
+        /// </summary>
+        public const string SectionName = "EDC";
+
+        /// <summary>
         /// How many seconds to leave a door open when a user has opened it?
         /// </summary>
+        /// <remarks>
+        /// This can now be updated via the "Custom Data" configuration.
+        /// </remarks>
         public int OpenSeconds = 11;
 
         Dictionary<string, int> rooms = new Dictionary<string, int>();
@@ -94,7 +102,7 @@ namespace IngameScript
                 isSealed = !isSealed;
             foreach (IMyInteriorLight light in lights)
             {
-                Config.ConfigSection sec = Config.Section(light,"EDC");
+                Config.ConfigSection sec = Config.Section(light, SectionName);
                 string sSealedColor = sec.Get("SealedColor", "Off");
                 string sLeakColor = sec.Get("LeakColor", "On");
                 sec.Save();
@@ -114,8 +122,8 @@ namespace IngameScript
 
         public void Main(string argument)
         {
-            Config.ConfigSection config = Config.Section(Me,"EDC");
-            OpenSeconds = config.Get("OpenSeconds", OpenSeconds);
+            Config.ConfigSection config = Config.Section(Me, SectionName);
+            config.Update("OpenSeconds", ref OpenSeconds);
             string prefix = config.Get("Prefix", "[#");
             string suffix = config.Get("Suffix", "]");
             config.Save();
@@ -246,7 +254,7 @@ namespace IngameScript
                     if (match.Groups[2].Captures[0].Value != "!")
                         doOpen = true;
                 }
-                Config.ConfigSection doorini = Config.Section(door,"EDC");
+                Config.ConfigSection doorini = Config.Section(door,SectionName);
                 doOpen = !doorini.Get("StayClosed", !doOpen);
                 doorini.Save();
 
