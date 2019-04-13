@@ -522,9 +522,12 @@ namespace IngameScript
                 int shouldClose = 0;
                 bool sealChanged = false;
                 bool doOpen = false;
+                bool stayClosed = false;
                 for (int m = 0; m < matches.Count; m++)
                 {
                     System.Text.RegularExpressions.Match match = matches[m];
+                    if (match.Groups[2].Captures[0].Value == "!")
+                        stayClosed = true;
                     string roomname = match.Groups[1].Captures[0].Value;
                     if (!newrooms.ContainsKey(roomname))
                     {
@@ -551,7 +554,9 @@ namespace IngameScript
                         doOpen = true;
                 }
                 Config.ConfigSection doorini = Config.Section(door, SectionName);
-                doOpen = !doorini.Get("StayClosed", !doOpen);
+                Emit(door.CustomName + ":" + doOpen.ToString());
+                if (doOpen)
+                    doOpen = !doorini.Get("StayClosed", stayClosed);
                 doorini.Save();
 
                 if (!doorState.ContainsKey(door.Position))
