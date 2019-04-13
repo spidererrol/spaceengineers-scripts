@@ -408,18 +408,20 @@ namespace IngameScript
             bool useecho = config.Get("Echo", true);
             config.Save();
 
-            if (consoletag.Length > 0)
+            // I actually do want to reinitialise the console on every run of the programme :)
+            //if (console == null)
             {
-                List<IMyTextSurfaceProvider> providers = getObjectsByName<IMyTextSurfaceProvider>(consoletag);
-                ConsoleSurface.ISurfaceFilter filter = ConsoleSurface.MakeSurfaceOR(
-                    ConsoleSurface.MakeSurfaceConfigFilter(SectionName, "ShowOnScreen", ConsoleSurface.KeyBuilder.SURFACEDISPLAYNAME),
-                    ConsoleSurface.MakeSurfaceConfigFilter(SectionName, "ShowOnScreen", ConsoleSurface.KeyBuilder.SURFACEPOS)
-                    );
+                ConsoleSurface.ISurfaceFilter filter = ConsoleSurface.ShowOnScreenFilter(SectionName);
+                if (consoletag.Length > 0)
+                {
+                    List<IMyTextSurfaceProvider> providers = getObjectsByName<IMyTextSurfaceProvider>(consoletag);
                     console = new ConsoleSurface(this, providers, filter, useecho);
 
-                // Things which only have one surface (eg Text Panels):
-                List<IMyTextSurface> panels = getObjectsByName<IMyTextSurface>(consoletag);
-                console.Add(panels);
+                    // Things which only have one surface (eg Text Panels):
+                    List<IMyTextSurface> panels = getObjectsByName<IMyTextSurface>(consoletag);
+                    console.Add(panels);
+                }
+                console.Add(Me, filter);
             }
 
             string sTags = System.Text.RegularExpressions.Regex.Escape(prefix) + @"(.+?)(!?)" + System.Text.RegularExpressions.Regex.Escape(suffix);
