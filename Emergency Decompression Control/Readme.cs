@@ -44,7 +44,7 @@
  "[EDC]" section (if not, make sure the script has compiled and run at least once). Edit the values
  for "Prefix" and "Suffix" to define new markers.
 
- Eg for "<%Room$>" instead of "[#Room]":
+ Eg for "<%Room%>" instead of "[#Room]":
     [EDC]
     Prefix=<%
     Suffix=%>
@@ -57,5 +57,15 @@
     [EDC]
     StayClosed=true
  
+ 2b. Hatch (normally closed door) [DEPRECIATED]
+
+ This is a legacy method for the above. It is depreciated as you have to keep all tags in sync and
+ it may behave inconsistently if you don't.
+ To activate this mode you must add a "!" before the closing tags on the door.
+ Eg "[#Bridge!] [#Upper Corridor!]"
+
+ 3. Advanced Lighting control.
+
+
 
 */

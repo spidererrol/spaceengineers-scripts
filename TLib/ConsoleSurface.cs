@@ -30,7 +30,7 @@ namespace IngameScript
                 public const string SURFACEPOS = "[pos]";
 
                 public KeyBuilder() { parts = new List<string>(); }
-                public KeyBuilder(string part1, string part2) : this() { Add(part1).Add(part2); }
+                public KeyBuilder(params string[] moreparts) : this() { parts.AddArray(moreparts); }
 
                 public KeyBuilder Add(string part) { parts.Add(part); return this; }
 
@@ -52,7 +52,12 @@ namespace IngameScript
                 }
             }
 
-            public class SurfaceConfigFilter
+            public interface ISurfaceFilter
+            {
+                List<IMyTextSurface> Surfaces(IMyTextSurfaceProvider provider);
+            }
+
+            public class SurfaceConfigFilter : ISurfaceFilter
             {
 
                 private readonly string section;
@@ -82,8 +87,33 @@ namespace IngameScript
                 }
             }
 
-            protected Program Me;
-            protected bool doEcho;
+            public static ISurfaceFilter MakeSurfaceConfigFilter(string section, params string[] keyparts) => new SurfaceConfigFilter(section, new KeyBuilder(keyparts));
+
+            public class SurfaceORFilter : ISurfaceFilter
+            {
+                private readonly List<ISurfaceFilter> filters;
+                private SurfaceORFilter() { filters = new List<ISurfaceFilter>(); }
+                public SurfaceORFilter(params ISurfaceFilter[] newfilters) : this()
+                {
+                    filters.AddArray(newfilters);
+                }
+
+                public void Add(ISurfaceFilter filter) => filters.Add(filter);
+
+                public List<IMyTextSurface> Surfaces(IMyTextSurfaceProvider provider)
+                {
+                    List<IMyTextSurface> surfaces = new List<IMyTextSurface>();
+                    foreach (ISurfaceFilter filter in filters)
+                    {
+                        surfaces.AddList(filter.Surfaces(provider));
+                    }
+                    return surfaces;
+                }
+            }
+            public static ISurfaceFilter MakeSurfaceOR(params ISurfaceFilter[] filters) => new SurfaceORFilter(filters);
+
+            protected readonly Program Me;
+            protected readonly bool doEcho;
             private bool ready;
 
             public ConsoleSurface() : base() { ready = false; }
@@ -109,7 +139,7 @@ namespace IngameScript
             {
                 Add((IMyTextSurfaceProvider)program, surfacename);
             }
-            public ConsoleSurface(IMyProgrammableBlock program, List<IMyTextSurfaceProvider> providers, SurfaceConfigFilter filter, bool useConsole = true) : this(program, useConsole)
+            public ConsoleSurface(IMyProgrammableBlock program, List<IMyTextSurfaceProvider> providers, ISurfaceFilter filter, bool useConsole = true) : this(program, useConsole)
             {
                 providers.ForEach(delegate (IMyTextSurfaceProvider provider) { surfaces.AddList(filter.Surfaces(provider)); });
             }
@@ -121,10 +151,13 @@ namespace IngameScript
                     surface.ContentType = VRage.Game.GUI.TextPanel.ContentType.TEXT_AND_IMAGE;
                     surface.WriteText("", false);
                 }
+                ready = true;
             }
 
             public void Echo(string msg)
             {
+                if (!ready)
+                    InitSurfaces();
                 if (doEcho)
                     Me.Echo(msg);
                 foreach (IMyTextSurface surface in surfaces)

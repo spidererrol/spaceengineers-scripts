@@ -25,13 +25,13 @@ namespace IngameScript
         {
             protected List<IMyTextSurface> surfaces;
 
-            public MultiSurface() { }
-            public MultiSurface(IMyTextSurface surface) { Add(surface); }
-            public MultiSurface(List<IMyTextSurface> newsurfaces) { Add(newsurfaces); }
-            public MultiSurface(IMyTextSurfaceProvider provider,string surface) { Add(provider, surface); }
-            public MultiSurface(IMyTextSurfaceProvider provider, int surface) { Add(provider, surface); }
-            public MultiSurface(List<IMyTextSurfaceProvider> providers,string surface) { Add(providers, surface); }
-            public MultiSurface(List<IMyTextSurfaceProvider> providers, int surface) { Add(providers, surface); }
+            public MultiSurface() { surfaces = new List<IMyTextSurface>(); }
+            public MultiSurface(IMyTextSurface surface) : this() { Add(surface); }
+            public MultiSurface(List<IMyTextSurface> newsurfaces) : this() { Add(newsurfaces); }
+            public MultiSurface(IMyTextSurfaceProvider provider, string surface) : this() { Add(provider, surface); }
+            public MultiSurface(IMyTextSurfaceProvider provider, int surface) : this() { Add(provider, surface); }
+            public MultiSurface(List<IMyTextSurfaceProvider> providers, string surface) : this() { Add(providers, surface); }
+            public MultiSurface(List<IMyTextSurfaceProvider> providers, int surface) : this() { Add(providers, surface); }
 
             /// <remarks>
             /// Why isn't IMyTextSurfaceProvider and IEnumerable?
