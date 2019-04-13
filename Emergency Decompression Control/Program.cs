@@ -406,6 +406,7 @@ namespace IngameScript
             string suffix = config.Get("Suffix", "]");
             string consoletag = config.Get("ConsoleTo", "##EDC##");
             bool useecho = config.Get("Echo", true);
+            config.Default("ShowOnScreen_" + Me.GetSurface(0).DisplayName, true);
             config.Save();
 
             // I actually do want to reinitialise the console on every run of the programme :)
