@@ -11,6 +11,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TLib", "TLib\TLib.shproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "General Monitor", "General Monitor\General Monitor.csproj", "{47D20786-BDF8-44EC-8D4F-BD54154D0F98}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Small Landing Pad Controller", "Small Landing Pad Controller\Small Landing Pad Controller.csproj", "{6F854ACA-53B9-47C8-A4FD-7A014FF82326}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		TLib\TLib.projitems*{47d20786-bdf8-44ec-8d4f-bd54154d0f98}*SharedItemsImports = 4
@@ -28,6 +30,8 @@ Global
 		{4C1EF1F3-453B-43B0-8D93-53DF99445125}.Debug|x64.Build.0 = Debug|x64
 		{47D20786-BDF8-44EC-8D4F-BD54154D0F98}.Debug|x64.ActiveCfg = Debug|x64
 		{47D20786-BDF8-44EC-8D4F-BD54154D0F98}.Debug|x64.Build.0 = Debug|x64
+		{6F854ACA-53B9-47C8-A4FD-7A014FF82326}.Debug|x64.ActiveCfg = Debug|x64
+		{6F854ACA-53B9-47C8-A4FD-7A014FF82326}.Debug|x64.Build.0 = Debug|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
