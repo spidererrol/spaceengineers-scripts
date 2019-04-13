@@ -554,7 +554,6 @@ namespace IngameScript
                         doOpen = true;
                 }
                 Config.ConfigSection doorini = Config.Section(door, SectionName);
-                Emit(door.CustomName + ":" + doOpen.ToString());
                 if (doOpen)
                     doOpen = !doorini.Get("StayClosed", stayClosed);
                 doorini.Save();
