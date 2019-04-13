@@ -109,11 +109,11 @@ namespace IngameScript
         void Main(string arg)
         {
             Config.ConfigSection config = Config.Section(Me, configSection);
-            config.Update("Battery LCD", ref lcdName);
-            config.Update("Battery Rates LCD", ref lcd2Name);
-            config.Update("Hydrogen LCD", ref lcdH2);
-            config.Update("Oxygen LCD", ref lcdO2);
-            config.Update("Image Prefix", ref imagePrefix);
+            config.Get("Battery LCD", ref lcdName);
+            config.Get("Battery Rates LCD", ref lcd2Name);
+            config.Get("Hydrogen LCD", ref lcdH2);
+            config.Get("Oxygen LCD", ref lcdO2);
+            config.Get("Image Prefix", ref imagePrefix);
             config.Save();
 
             List<IMyTextPanel> screens = getObjectsByName<IMyTextPanel>(lcdName);

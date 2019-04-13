@@ -123,7 +123,7 @@ namespace IngameScript
         public void Main(string argument)
         {
             Config.ConfigSection config = Config.Section(Me, SectionName);
-            config.Update("OpenSeconds", ref OpenSeconds);
+            config.Get("OpenSeconds", ref OpenSeconds);
             string prefix = config.Get("Prefix", "[#");
             string suffix = config.Get("Suffix", "]");
             config.Save();

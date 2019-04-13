@@ -37,7 +37,7 @@ namespace IngameScript
         public void Main(string realargument)
         {
             Config.ConfigSection config = Config.Section(Me, "NCF Monitor");
-            config.Update("Tag", ref NaniteTag);
+            config.Get("Tag", ref NaniteTag);
             config.Save();
             
             var nf = GridTerminalSystem.GetBlockWithName("Nanite Control Factory - " + NaniteTag) as IMyTerminalBlock;

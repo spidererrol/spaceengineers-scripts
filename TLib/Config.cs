@@ -129,9 +129,9 @@ namespace IngameScript
             /// </summary>
             /// <param name="key">key to update</param>
             /// <param name="value">value to use as default and to update</param>
-            public void Update(string key,ref string value)=> value = Get(key, value);
-            public void Update(string key,ref int value) => value = Get(key, value);
-            public void Update(string key, ref bool value) => value = Get(key, value);
+            public void Get(string key,ref string value)=> value = Get(key, value);
+            public void Get(string key,ref int value) => value = Get(key, value);
+            public void Get(string key, ref bool value) => value = Get(key, value);
 
             /// <summary>
             /// Save ENTIRE config to block.
