@@ -112,11 +112,14 @@ namespace IngameScript
             }
             public static ISurfaceFilter MakeSurfaceOR(params ISurfaceFilter[] filters) => new SurfaceORFilter(filters);
 
+            public delegate void EchoFunc(string);
+
             protected readonly Program Me;
             protected readonly bool doEcho;
+            private readonly List<EchoFunc> echos;
             private bool ready;
 
-            public ConsoleSurface() : base() { ready = false; }
+            public ConsoleSurface() : base() { ready = false; echos = new List<EchoFunc>; }
 
             // These may conflict with IMyProgrammingBlock etc:
             //public ConsoleSurface(IMyTextSurface surface) : base(surface) { }
@@ -126,20 +129,21 @@ namespace IngameScript
             //public ConsoleSurface(List<IMyTextSurfaceProvider> providers, string surface) : base(providers, surface) { }
             //public ConsoleSurface(List<IMyTextSurfaceProvider> providers, int surface) : base(providers, surface) { }
 
-            public ConsoleSurface(IMyProgrammableBlock program, bool useConsole = true) : this()
+            public ConsoleSurface(Program program, bool doecho = true,EchoFunc echo = null) : this()
             {
-                Me = (Program)program;
-                doEcho = useConsole;
+                if (echo != null)
+                    echos.Add(echo);
+                doEcho = doecho;
             }
-            public ConsoleSurface(IMyProgrammableBlock program, int surfaceno, bool useConsole = true) : this(program, useConsole)
+            public ConsoleSurface(Program program, int surfaceno, bool doecho=true,EchoFunc echo = null) : this(program, doecho, echo)
             {
-                Add((IMyTextSurfaceProvider)program, surfaceno);
+                Add(program.Me, surfaceno);
             }
-            public ConsoleSurface(IMyProgrammableBlock program, string surfacename, bool useConsole = true) : this(program, useConsole)
+            public ConsoleSurface(Program program, string surfacename, bool doecho = true, EchoFunc echo = null) : this(program, doecho, echo)
             {
-                Add((IMyTextSurfaceProvider)program, surfacename);
+                Add(program.Me, surfacename);
             }
-            public ConsoleSurface(IMyProgrammableBlock program, List<IMyTextSurfaceProvider> providers, ISurfaceFilter filter, bool useConsole = true) : this(program, useConsole)
+            public ConsoleSurface(Program program, List<IMyTextSurfaceProvider> providers, ISurfaceFilter filter, bool doecho = true, EchoFunc echo = null) : this(program, doecho, echo)
             {
                 providers.ForEach(delegate (IMyTextSurfaceProvider provider) { surfaces.AddList(filter.Surfaces(provider)); });
             }
@@ -160,9 +164,19 @@ namespace IngameScript
                     InitSurfaces();
                 if (doEcho)
                     Me.Echo(msg);
-                foreach (IMyTextSurface surface in surfaces)
+                if (echos.Count > 0)
                 {
-                    surface.WriteText(msg + "\n", true);
+                    foreach (EchoFunc echo in echos)
+                    {
+                        echo(msg);
+                    }
+                }
+                if (surfaces.Count > 0)
+                {
+                    foreach (IMyTextSurface surface in surfaces)
+                    {
+                        surface.WriteText(msg + "\n", true);
+                    }
                 }
             }
         }

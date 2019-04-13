@@ -415,7 +415,7 @@ namespace IngameScript
                     ConsoleSurface.MakeSurfaceConfigFilter(SectionName, "ShowOnScreen", ConsoleSurface.KeyBuilder.SURFACEDISPLAYNAME),
                     ConsoleSurface.MakeSurfaceConfigFilter(SectionName, "ShowOnScreen", ConsoleSurface.KeyBuilder.SURFACEPOS)
                     );
-                console = new ConsoleSurface(Me, providers, filter, useecho);
+                    console = new ConsoleSurface(this, providers, filter, useecho);
 
                 // Things which only have one surface (eg Text Panels):
                 List<IMyTextSurface> panels = getObjectsByName<IMyTextSurface>(consoletag);
