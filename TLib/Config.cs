@@ -137,6 +137,16 @@ namespace IngameScript
             public void Get(string key, ref bool value) => value = Get(key, value);
 
             /// <summary>
+            /// Set key to a default value if it has not been set already.
+            /// </summary>
+            /// <param name="key">key to set</param>
+            /// <param name="value">default value to use</param>
+            public void Default(string key, string value) => Get(key, value);
+            public void Default(string key, int value) => Get(key, value);
+            public void Default(string key, float value) => Get(key, value);
+            public void Default(string key, bool value) => Get(key, value);
+
+            /// <summary>
             /// Save ENTIRE config to block.
             /// </summary>
             /// <seealso cref="Config.Save(IMyTerminalBlock)"/>
@@ -152,6 +162,7 @@ namespace IngameScript
         }
 
         private readonly IMyTerminalBlock termBlock;
+        private string original;
 
         /// <summary>
         /// Create a <see cref="ConfigSection"/> directly from a config source.
@@ -217,6 +228,7 @@ namespace IngameScript
             }
             this.Clear();
             this.TryParse(block.CustomData);
+            original = this.ToString();
         }
         /// <summary>
         /// Load configuration from an existing <see cref="MyIni"/>
@@ -230,6 +242,7 @@ namespace IngameScript
         {
             this.Clear();
             this.TryParse(defaultini.ToString());
+            original = this.ToString();
         }
         /// <summary>
         /// Load configuration from a string.
@@ -239,6 +252,7 @@ namespace IngameScript
         {
             this.Clear();
             this.TryParse(defaultini);
+            original = this.ToString();
         }
 
         /// <summary>
@@ -247,7 +261,12 @@ namespace IngameScript
         /// <param name="block"></param>
         public void Save(IMyTerminalBlock block)
         {
-            block.CustomData = this.ToString();
+            string output = this.ToString();
+            if (output != original)
+            {
+                block.CustomData = output;
+                original = output;
+            }
         }
         public class NoBlockSpecified : Exception
         {
