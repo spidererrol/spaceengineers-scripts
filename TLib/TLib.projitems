@@ -10,6 +10,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Config.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConsoleSurface.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MethodNotAvailable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MultiSurface.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TLib.cs" />
   </ItemGroup>
 </Project>
