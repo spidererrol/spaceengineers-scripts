@@ -112,6 +112,12 @@ namespace IngameScript
             }
             public static ISurfaceFilter MakeSurfaceOR(params ISurfaceFilter[] filters) => new SurfaceORFilter(filters);
 
+            public static ConsoleSurface.ISurfaceFilter ShowOnScreenFilter(string SectionName) => ConsoleSurface.MakeSurfaceOR(
+                    ConsoleSurface.MakeSurfaceConfigFilter(SectionName, "ShowOnScreen_", ConsoleSurface.KeyBuilder.SURFACEDISPLAYNAME),
+                    ConsoleSurface.MakeSurfaceConfigFilter(SectionName, "ShowOnScreen_", ConsoleSurface.KeyBuilder.SURFACEIDNAME),
+                    ConsoleSurface.MakeSurfaceConfigFilter(SectionName, "ShowOnScreen_", ConsoleSurface.KeyBuilder.SURFACEPOS)
+                    );
+
             public delegate void EchoFunc(string msg);
 
             protected readonly Program program;
@@ -129,14 +135,14 @@ namespace IngameScript
             //public ConsoleSurface(List<IMyTextSurfaceProvider> providers, string surface) : base(providers, surface) { }
             //public ConsoleSurface(List<IMyTextSurfaceProvider> providers, int surface) : base(providers, surface) { }
 
-            public ConsoleSurface(Program program, bool doecho = true,EchoFunc echo = null) : this()
+            public ConsoleSurface(Program program, bool doecho = true, EchoFunc echo = null) : this()
             {
                 if (echo != null)
                     echos.Add(echo);
                 doEcho = doecho;
                 this.program = program;
             }
-            public ConsoleSurface(Program program, int surfaceno, bool doecho=true,EchoFunc echo = null) : this(program, doecho, echo)
+            public ConsoleSurface(Program program, int surfaceno, bool doecho = true, EchoFunc echo = null) : this(program, doecho, echo)
             {
                 Add(program.Me, surfaceno);
             }
@@ -146,7 +152,22 @@ namespace IngameScript
             }
             public ConsoleSurface(Program program, List<IMyTextSurfaceProvider> providers, ISurfaceFilter filter, bool doecho = true, EchoFunc echo = null) : this(program, doecho, echo)
             {
-                providers.ForEach(delegate (IMyTextSurfaceProvider provider) { surfaces.AddList(filter.Surfaces(provider)); });
+                Add(providers, filter);
+            }
+
+            public void Add(IMyTextSurfaceProvider provider, ISurfaceFilter filter = null)
+            {
+                if (filter == null)
+                    Add(ProviderSurfaces(provider));
+                else
+                    surfaces.AddList(filter.Surfaces(provider));
+            }
+            public void Add(List<IMyTextSurfaceProvider> providers, ISurfaceFilter filter = null)
+            {
+                if (filter == null)
+                    providers.ForEach(delegate (IMyTextSurfaceProvider provider) { Add(ProviderSurfaces(provider)); });
+                else
+                    providers.ForEach(delegate (IMyTextSurfaceProvider provider) { surfaces.AddList(filter.Surfaces(provider)); });
             }
 
             protected void InitSurfaces()
@@ -158,6 +179,8 @@ namespace IngameScript
                 }
                 ready = true;
             }
+
+            public void Clear() => InitSurfaces();
 
             public void Echo(string msg)
             {
