@@ -112,14 +112,14 @@ namespace IngameScript
             }
             public static ISurfaceFilter MakeSurfaceOR(params ISurfaceFilter[] filters) => new SurfaceORFilter(filters);
 
-            public delegate void EchoFunc(string);
+            public delegate void EchoFunc(string msg);
 
             protected readonly Program Me;
             protected readonly bool doEcho;
             private readonly List<EchoFunc> echos;
             private bool ready;
 
-            public ConsoleSurface() : base() { ready = false; echos = new List<EchoFunc>; }
+            public ConsoleSurface() : base() { ready = false; echos = new List<EchoFunc>(); }
 
             // These may conflict with IMyProgrammingBlock etc:
             //public ConsoleSurface(IMyTextSurface surface) : base(surface) { }
