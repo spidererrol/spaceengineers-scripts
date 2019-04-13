@@ -109,7 +109,7 @@ namespace IngameScript
             {
                 if (!ContainsKey(key))
                     Set(key, defaultvalue);
-                return parent.Get(section,key).ToString();
+                return parent.Get(section, key).ToString();
             }
             public int Get(string key, int defaultvalue)
             {
@@ -129,8 +129,8 @@ namespace IngameScript
             /// </summary>
             /// <param name="key">key to update</param>
             /// <param name="value">value to use as default and to update</param>
-            public void Get(string key,ref string value)=> value = Get(key, value);
-            public void Get(string key,ref int value) => value = Get(key, value);
+            public void Get(string key, ref string value) => value = Get(key, value);
+            public void Get(string key, ref int value) => value = Get(key, value);
             public void Get(string key, ref bool value) => value = Get(key, value);
 
             /// <summary>
@@ -246,8 +246,9 @@ namespace IngameScript
         {
             block.CustomData = this.ToString();
         }
-        public class NoBlockSpecified : Exception {
-            public NoBlockSpecified(string msg) : base(msg) {  }
+        public class NoBlockSpecified : Exception
+        {
+            public NoBlockSpecified(string msg) : base(msg) { }
         }
         /// <summary>
         /// Save to the block that this config was created with.
