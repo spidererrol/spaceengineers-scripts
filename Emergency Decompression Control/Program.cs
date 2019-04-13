@@ -41,7 +41,6 @@ namespace IngameScript
 
         public TimeSpan ticker = TimeSpan.FromSeconds(0);
 
-
         public Program()
         {
             Runtime.UpdateFrequency = UpdateFrequency.Update10;
@@ -56,19 +55,18 @@ namespace IngameScript
         //    // needed.
         //}
 
-        public void InitSurface()
-        {
-            IMyTextSurface surface = Me.GetSurface(0);
-            surface.ContentType = ContentType.TEXT_AND_IMAGE;
-            surface.WriteText("", false);
-        }
+        ConsoleSurface console;
+
+        public void Save() => console = null;
 
         public void Emit(string msg)
         {
-            IMyTextSurface surface = Me.GetSurface(0);
-            surface.WriteText(msg + "\n", true);
-            Echo(msg);
+            if (console == null)
+                console = new ConsoleSurface(Me, 0);
+
+            console.Echo(msg);
         }
+
 
         System.Text.RegularExpressions.Regex reWebColor = new System.Text.RegularExpressions.Regex(@"^#?([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$");
 
@@ -254,7 +252,7 @@ namespace IngameScript
                     if (match.Groups[2].Captures[0].Value != "!")
                         doOpen = true;
                 }
-                Config.ConfigSection doorini = Config.Section(door,SectionName);
+                Config.ConfigSection doorini = Config.Section(door, SectionName);
                 doOpen = !doorini.Get("StayClosed", !doOpen);
                 doorini.Save();
 
