@@ -114,7 +114,7 @@ namespace IngameScript
 
             public delegate void EchoFunc(string msg);
 
-            protected readonly Program Me;
+            protected readonly Program program;
             protected readonly bool doEcho;
             private readonly List<EchoFunc> echos;
             private bool ready;
@@ -134,6 +134,7 @@ namespace IngameScript
                 if (echo != null)
                     echos.Add(echo);
                 doEcho = doecho;
+                this.program = program;
             }
             public ConsoleSurface(Program program, int surfaceno, bool doecho=true,EchoFunc echo = null) : this(program, doecho, echo)
             {
@@ -163,7 +164,7 @@ namespace IngameScript
                 if (!ready)
                     InitSurfaces();
                 if (doEcho)
-                    Me.Echo(msg);
+                    program.Echo(msg);
                 if (echos.Count > 0)
                 {
                     foreach (EchoFunc echo in echos)
