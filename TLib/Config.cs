@@ -18,11 +18,6 @@ using VRageMath;
 
 namespace IngameScript
 {
-    // This template is intended for extension classes. For most purposes you're going to want a normal
-    // utility class.
-    // https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/extension-methods
-
-
     /// <summary>
     /// Handle storing configuration on an <see cref="IMyTerminalBlock"/> in <see cref="MyIni"/> format.
     /// </summary>
@@ -98,6 +93,7 @@ namespace IngameScript
             public void Set(string key, string value) => parent.Set(section, key, value);
             public void Set(string key, bool value) => parent.Set(section, key, value);
             public void Set(string key, int value) => parent.Set(section, key, value);
+            public void Set(string key, float value) => parent.Set(section, key, value);
 
             /// <summary>
             /// Retrieve a key, setting it to a default if it is missing.
@@ -117,6 +113,12 @@ namespace IngameScript
                     Set(key, defaultvalue);
                 return parent.Get(section, key).ToInt32();
             }
+            public float Get(string key, float defaultvalue)
+            {
+                if (!ContainsKey(key))
+                    Set(key, defaultvalue);
+                return parent.Get(section, key).ToSingle();
+            }
             public bool Get(string key, bool defaultvalue)
             {
                 if (!ContainsKey(key))
@@ -131,6 +133,7 @@ namespace IngameScript
             /// <param name="value">value to use as default and to update</param>
             public void Get(string key, ref string value) => value = Get(key, value);
             public void Get(string key, ref int value) => value = Get(key, value);
+            public void Get(string key, ref float value) => value = Get(key, value);
             public void Get(string key, ref bool value) => value = Get(key, value);
 
             /// <summary>
