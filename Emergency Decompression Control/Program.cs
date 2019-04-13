@@ -62,7 +62,7 @@ namespace IngameScript
         public void Emit(string msg)
         {
             if (console == null)
-                console = new ConsoleSurface(Me, 0);
+                console = new ConsoleSurface(this, 0);
             console.Echo(msg);
         }
 
