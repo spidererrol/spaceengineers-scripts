@@ -48,7 +48,7 @@ namespace IngameScript
                     return index;
 
                 string imagename = imagePrefix + index.ToString("000");
-                foreach (IMyTextPanel lcd in screens)
+                foreach (IMyTextSurface lcd in screens)
                 {
                     lcd.ContentType = ContentType.TEXT_AND_IMAGE;
                     if (imagename != lcd.CurrentlyShownImage)
@@ -70,7 +70,7 @@ namespace IngameScript
         {
             if (screens.Any())
             {
-                foreach (IMyTextPanel lcd in screens)
+                foreach (IMyTextSurface lcd in screens)
                 {
                     lcd.ContentType = ContentType.TEXT_AND_IMAGE;
                     if (diff > 0)
