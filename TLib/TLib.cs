@@ -22,14 +22,10 @@ namespace IngameScript
     {
         #region TLib.cs
         const string MULTIPLIERS = ".kMGTPEZY";
-        System.Text.RegularExpressions.Regex reJumpDriveMaxPower = new System.Text.RegularExpressions.Regex(
-        "Max Stored Power: (\\d+\\.?\\d*) (\\w?)Wh",
-        System.Text.RegularExpressions.RegexOptions.Singleline);
-        System.Text.RegularExpressions.Regex reJumpDriveCurPower = new System.Text.RegularExpressions.Regex(
-            "Stored power: (\\d+\\.?\\d*) (\\w?)Wh",
-        System.Text.RegularExpressions.RegexOptions.Singleline);
+        readonly System.Text.RegularExpressions.Regex reJumpDriveMaxPower = new System.Text.RegularExpressions.Regex("Max Stored Power: (\\d+\\.?\\d*) (\\w?)Wh", System.Text.RegularExpressions.RegexOptions.Singleline);
+        readonly System.Text.RegularExpressions.Regex reJumpDriveCurPower = new System.Text.RegularExpressions.Regex("Stored power: (\\d+\\.?\\d*) (\\w?)Wh", System.Text.RegularExpressions.RegexOptions.Singleline);
+        readonly System.Text.RegularExpressions.Regex reHUnit = new System.Text.RegularExpressions.Regex(@"^(\d*\.\d+|\d+)([kMGTPEZY])(.*)$");
 
-  
         public void UpdateDict<keyType, valType>(IDictionary<keyType, valType> dict, keyType key, valType val)
         {
             if (dict.ContainsKey(key))
@@ -241,6 +237,37 @@ namespace IngameScript
             {
                 return (IMyJumpDrive)b;
             });
+        }
+
+        public double HUnitToDouble(string hunit, bool brokenSi = false)
+        {
+            System.Text.RegularExpressions.Regex re;
+            if (brokenSi) re = new System.Text.RegularExpressions.Regex(reHUnit.ToString(), System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            else re = reHUnit;
+            System.Text.RegularExpressions.Match match = re.Match(hunit);
+            if (match.Success)
+            {
+                double parsedDouble = Double.Parse(match.Groups[1].Value);
+                return parsedDouble * Math.Pow(1000.0, MULTIPLIERS.IndexOf(match.Groups[2].Value));
+            }
+            else
+            {
+                return double.Parse(hunit);
+            }
+        }
+
+        public string DoubleToHUnit(double value, double demultiplier = 1, string format = "N")
+        {
+            string si = MULTIPLIERS;
+            while (si.Length > 1)
+            {
+                double mul = Math.Pow(1000.0, si.Length - 1);
+                if (value >= mul)
+                {
+                    return (value / mul).ToString(format) + si.Last().ToString();
+                }
+            }
+            return value.ToString(format);
         }
 
         /// <summary>
