@@ -406,24 +406,9 @@ namespace IngameScript
             string suffix = config.Get("Suffix", "]");
             string consoletag = config.Get("ConsoleTo", "##EDC##");
             bool useecho = config.Get("Echo", true);
-            config.Default("ShowOnScreen_" + Me.GetSurface(0).DisplayName, true);
             config.Save();
 
-            // I actually do want to reinitialise the console on every run of the programme :)
-            //if (console == null)
-            {
-                ConsoleSurface.ISurfaceFilter filter = ConsoleSurface.ShowOnScreenFilter(SectionName);
-                if (consoletag.Length > 0)
-                {
-                    List<IMyTextSurfaceProvider> providers = getObjectsByName<IMyTextSurfaceProvider>(consoletag);
-                    console = new ConsoleSurface(this, providers, filter, useecho);
-
-                    // Things which only have one surface (eg Text Panels):
-                    List<IMyTextSurface> panels = getObjectsByName<IMyTextSurface>(consoletag);
-                    console.Add(panels);
-                }
-                console.Add(Me, filter);
-            }
+            console = ConsoleSurface.EasyConsole(this, consoletag, SectionName, useecho);
 
             string sTags = System.Text.RegularExpressions.Regex.Escape(prefix) + @"(.+?)(!?)" + System.Text.RegularExpressions.Regex.Escape(suffix);
             System.Text.RegularExpressions.Regex reTags = new System.Text.RegularExpressions.Regex(sTags);
