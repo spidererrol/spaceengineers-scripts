@@ -68,12 +68,13 @@ namespace IngameScript
 
         public delegate bool BlockFilter(IMyTerminalBlock block);
 
-        List<IType> GetBlocksOfType<IType>(BlockFilter blockFilter = null) where IType : IMyTerminalBlock
+        List<IType> GetBlocksOfType<IType>(BlockFilter blockFilter) where IType : IMyTerminalBlock
         {
             List<IMyTerminalBlock> hits = new List<IMyTerminalBlock>();
             if (blockFilter == null)
-                blockFilter = myGridOnly;
-            GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(hits, block => blockFilter(block));
+                GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(hits);
+            else
+                GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(hits, block => blockFilter(block));
             List<IType> ret = new List<IType>();
             for (int i = 0; i < hits.Count; i++)
             {
@@ -91,7 +92,13 @@ namespace IngameScript
                 }
             }
             return ret;
-
+        }
+        List<IType> GetBlocksOfType<IType>(bool thisgrid = true) where IType : IMyTerminalBlock
+        {
+            if (thisgrid)
+                return GetBlocksOfType<IType>(myGridOnly);
+            else
+                return GetBlocksOfType<IType>(null);
         }
 
         List<IMyBlockGroup> findGroups(string groupname)
