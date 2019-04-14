@@ -172,6 +172,14 @@ namespace IngameScript
             return hits[0];
         }
 
+        /// <summary>
+        /// Get a MultiSurface which convers all matching surfaces. Note: surfaceFilter actually defaults to the ShowOnScreen config filter.
+        /// </summary>
+        /// <param name="match">string to match in block names</param>
+        /// <param name="configSection">configuration to scan in CustomData of matching blocks</param>
+        /// <param name="thisgrid">only match blocks on this connected grid</param>
+        /// <param name="surfaceFilter">If null will default to the ShowOnScreen config filter</param>
+        /// <returns>a MultiSurface</returns>
         MultiSurface GetMultiSurfaceByName(string match, string configSection, bool thisgrid = true, MultiSurface.ISurfaceFilter surfaceFilter = null)
         {
             List<IMyTextSurfaceProvider> providers = getBlocksByName<IMyTextSurfaceProvider>(match, thisgrid);
