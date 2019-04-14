@@ -76,7 +76,7 @@ namespace IngameScript
             }
 
             /// <returns>Returns the <see cref="IngameScript.Config"/> that this section is part of.</returns>
-            public Config Config() => parent;
+            public Config Config => parent;
 
             /// <summary>
             /// Check if a specific key exists in this section.
@@ -94,6 +94,8 @@ namespace IngameScript
             public void Set(string key, bool value) => parent.Set(section, key, value);
             public void Set(string key, int value) => parent.Set(section, key, value);
             public void Set(string key, float value) => parent.Set(section, key, value);
+
+            public void SetComment(string key, string comment) => parent.SetComment(section, key, comment);
 
             /// <summary>
             /// Retrieve a key, setting it to a default if it is missing.
