@@ -38,7 +38,7 @@ namespace IngameScript
             }
         }
 
-        List<IType> getObjectsByName<IType>(string match, bool thisgrid = true)
+        List<IType> getBlocksByName<IType>(string match, bool thisgrid = true)
         {
             List<IMyTerminalBlock> hits = new List<IMyTerminalBlock>();
             if (match == "")
@@ -157,9 +157,16 @@ namespace IngameScript
             });
         }
 
-        IType getObjectByName<IType>(string match, bool thisgrid = true) where IType : IMyTerminalBlock
+        /// <summary>
+        /// Get the first block of a given type with a name that matches <paramref name="match"/>.
+        /// </summary>
+        /// <typeparam name="IType">Type of block to search for. It must be based on <see cref="IMyTerminalBlock"/></typeparam>
+        /// <param name="match">String that must be found in the block name</param>
+        /// <param name="thisgrid">If it should be on this grid or not.</param>
+        /// <returns></returns>
+        IType getBlockByName<IType>(string match, bool thisgrid = true) where IType : IMyTerminalBlock
         {
-            List<IType> hits = getObjectsByName<IType>(match, thisgrid);
+            List<IType> hits = getBlocksByName<IType>(match, thisgrid);
             if (hits.Count == 0)
                 return default(IType);
             return hits[0];

@@ -59,7 +59,7 @@ namespace IngameScript
             var ld = GridTerminalSystem.GetBlockWithName("LCD-NanitePanel_" + NaniteTag) as IMyTextPanel;
             Echo("Got LCD");
             ld.WriteText("", false);
-            IMyConveyorSorter sorter = getObjectByName<IMyConveyorSorter>("[" + NaniteTag + "]");
+            IMyConveyorSorter sorter = getBlockByName<IMyConveyorSorter>("[" + NaniteTag + "]");
 
             ld.WriteText("-= Nanite Factory =- \n", false);
 

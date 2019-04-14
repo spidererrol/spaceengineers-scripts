@@ -116,10 +116,10 @@ namespace IngameScript
             config.Get("Image Prefix", ref imagePrefix);
             config.Save();
 
-            List<IMyTextPanel> screens = getObjectsByName<IMyTextPanel>(lcdName);
-            List<IMyTextPanel> screens2 = getObjectsByName<IMyTextPanel>(lcd2Name);
-            List<IMyTextPanel> screensH2 = getObjectsByName<IMyTextPanel>(lcdH2);
-            List<IMyTextPanel> screensO2 = getObjectsByName<IMyTextPanel>(lcdO2);
+            List<IMyTextPanel> screens = getBlocksByName<IMyTextPanel>(lcdName);
+            List<IMyTextPanel> screens2 = getBlocksByName<IMyTextPanel>(lcd2Name);
+            List<IMyTextPanel> screensH2 = getBlocksByName<IMyTextPanel>(lcdH2);
+            List<IMyTextPanel> screensO2 = getBlocksByName<IMyTextPanel>(lcdO2);
 
             // No shorthand methods for these:
             List<IMyBatteryBlock> batteries = new List<IMyBatteryBlock>();

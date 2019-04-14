@@ -435,14 +435,14 @@ namespace IngameScript
             ticker += Runtime.TimeSinceLastRun;
             if (argument == "test")
             {
-                List<IMyDoor> blks = getObjectsByName<IMyDoor>("Shutter");
+                List<IMyDoor> blks = getBlocksByName<IMyDoor>("Shutter");
                 for (int i = 0; i < blks.Count; i++)
                 {
                     blks[i].CustomName = blks[i].CustomName + " " + prefix + "ControlRoom" + suffix;
                 }
             }
             Dictionary<string, int> newrooms = new Dictionary<string, int>();
-            List<IMyAirVent> vents = getObjectsByName<IMyAirVent>(prefix);
+            List<IMyAirVent> vents = getBlocksByName<IMyAirVent>(prefix);
             for (int i = 0; i < vents.Count; i++)
             {
                 IMyAirVent vent = vents[i];
@@ -495,11 +495,11 @@ namespace IngameScript
                     //RunActions(getObjectsByName<IMyInteriorLight>(prefix + roomKey + suffix), "OnOff_On");
                     //RunActions(getObjectsByName<IMyInteriorLight>(prefix + roomKey + "!" + suffix), "OnOff_Off");
                 }*/
-                updateLights(getObjectsByName<IMyInteriorLight>(prefix + roomKey + suffix), isSealed, false);
-                updateLights(getObjectsByName<IMyInteriorLight>(prefix + roomKey + "!" + suffix), isSealed, true);
+                updateLights(getBlocksByName<IMyInteriorLight>(prefix + roomKey + suffix), isSealed, false);
+                updateLights(getBlocksByName<IMyInteriorLight>(prefix + roomKey + "!" + suffix), isSealed, true);
             }
             Emit(roomKeys.Count + " rooms found");
-            List<IMyDoor> doors = getObjectsByName<IMyDoor>(prefix);
+            List<IMyDoor> doors = getBlocksByName<IMyDoor>(prefix);
             for (int i = 0; i < doors.Count; i++)
             {
                 IMyDoor door = doors[i];
