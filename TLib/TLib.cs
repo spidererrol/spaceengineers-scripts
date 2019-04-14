@@ -54,20 +54,44 @@ namespace IngameScript
                 try
                 {
                     thing = (IType)hits[i];
-                    //Debug("++ " + hits[i].CustomName);    
                     if (thing == null)
                         continue;
-                    //if (thisgrid && ( thing as IMyTerminalBlock ).CubeGrid != Me.CubeGrid)
-                    //    continue;
                     ret.Add(thing);
                 }
                 catch
                 {
-                    //Debug("-- " + hits[i].CustomName);    
                     continue;
                 }
             }
             return ret;
+        }
+
+        public delegate bool BlockFilter(IMyTerminalBlock block);
+
+        List<IType> GetBlocksOfType<IType>(BlockFilter blockFilter = null) where IType : IMyTerminalBlock
+        {
+            List<IMyTerminalBlock> hits = new List<IMyTerminalBlock>();
+            if (blockFilter == null)
+                blockFilter = myGridOnly;
+            GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(hits, block => blockFilter(block));
+            List<IType> ret = new List<IType>();
+            for (int i = 0; i < hits.Count; i++)
+            {
+                IType thing;
+                try
+                {
+                    thing = (IType)hits[i];
+                    if (thing == null)
+                        continue;
+                    ret.Add(thing);
+                }
+                catch
+                {
+                    continue;
+                }
+            }
+            return ret;
+
         }
 
         List<IMyBlockGroup> findGroups(string groupname)
