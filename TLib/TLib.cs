@@ -172,6 +172,15 @@ namespace IngameScript
             return hits[0];
         }
 
+        MultiSurface GetMultiSurfaceByName(string match, string configSection, bool thisgrid = true, MultiSurface.ISurfaceFilter surfaceFilter = null)
+        {
+            List<IMyTextSurfaceProvider> providers = getBlocksByName<IMyTextSurfaceProvider>(match, thisgrid);
+            List<IMyTextSurface> surfaces = getBlocksByName<IMyTextSurface>(match, thisgrid);
+            if (surfaceFilter == null)
+                surfaceFilter = MultiSurface.ShowOnScreenFilter(configSection);
+            return new MultiSurface(providers, surfaces, surfaceFilter);
+        }
+
         bool myGridOnly(IMyTerminalBlock block)
         {
             //return block.CubeGrid == Me.CubeGrid;

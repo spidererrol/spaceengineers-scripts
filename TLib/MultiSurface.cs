@@ -129,6 +129,11 @@ namespace IngameScript
             public MultiSurface(IMyTextSurfaceProvider provider, int surface) : this() { Add(provider, surface); }
             public MultiSurface(List<IMyTextSurfaceProvider> providers, string surface) : this() { Add(providers, surface); }
             public MultiSurface(List<IMyTextSurfaceProvider> providers, int surface) : this() { Add(providers, surface); }
+            public MultiSurface(List<IMyTextSurfaceProvider> providers,List<IMyTextSurface> surfaces, ISurfaceFilter filter = null)
+            {
+                Add(surfaces);
+                Add(providers, filter);
+            }
 
             /// <remarks>
             /// Why isn't IMyTextSurfaceProvider and IEnumerable?
