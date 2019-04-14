@@ -23,10 +23,10 @@ namespace IngameScript
     {
         const string configSection = "General Monitor";
         // The Name of the LCD Panel to display battery power too.        
-        string lcdName = "LCD Battery";
-        string lcd2Name = "Battery Rates LCD";
-        string lcdH2 = "LCD H2";
-        string lcdO2 = "LCD O2";
+        string batteriesLCDName = "LCD Battery";
+        string batteriesRatesLCDName = "Battery Rates LCD";
+        string tanksH2Name = "LCD H2";
+        string tanksO2Name = "LCD O2";
 
         // The Image set to use.           
         string imagePrefix = "Percent ";
@@ -36,7 +36,7 @@ namespace IngameScript
             Runtime.UpdateFrequency = UpdateFrequency.Update10;
         }
 
-        int percentScreen(List<IMyTextPanel> screens, float pct, int lastIndex = -1)
+        int GeneralPercent(List<IMyTextSurface> screens, float pct, int lastIndex = -1)
         {
             if (screens.Any())
             {
@@ -66,7 +66,7 @@ namespace IngameScript
             return lastIndex;
         }
 
-        void rateScreen(List<IMyTextPanel> screens, float diff)
+        void BatteriesRate(List<IMyTextSurface> screens, float diff)
         {
             if (screens.Any())
             {
@@ -87,7 +87,7 @@ namespace IngameScript
             }
         }
 
-        void calcTanks(List<IMyTextPanel> screens, List<IMyGasTank> tanks)
+        void TanksPercent(List<IMyTextSurface> screens, List<IMyGasTank> tanks)
         {
             double fill = 0.0f;
             int count = 0;
@@ -98,37 +98,11 @@ namespace IngameScript
             }
             fill /= count;
 
-            percentScreen(screens, (float)(100.0f * fill));
+            GeneralPercent(screens, (float)(100.0f * fill));
         }
 
-        void test(ref string myvar)
+        void ProcessBatteries(MultiSurface batteriesPercentScreens, MultiSurface batteriesRateScreens, List<IMyBatteryBlock> batteries)
         {
-            myvar = myvar + "!!";
-        }
-
-        void Main(string arg)
-        {
-            Config.ConfigSection config = Config.Section(Me, configSection);
-            config.Get("Battery LCD", ref lcdName);
-            config.Get("Battery Rates LCD", ref lcd2Name);
-            config.Get("Hydrogen LCD", ref lcdH2);
-            config.Get("Oxygen LCD", ref lcdO2);
-            config.Get("Image Prefix", ref imagePrefix);
-            config.Save();
-
-            List<IMyTextPanel> screens = getBlocksByName<IMyTextPanel>(lcdName);
-            List<IMyTextPanel> screens2 = getBlocksByName<IMyTextPanel>(lcd2Name);
-            List<IMyTextPanel> screensH2 = getBlocksByName<IMyTextPanel>(lcdH2);
-            List<IMyTextPanel> screensO2 = getBlocksByName<IMyTextPanel>(lcdO2);
-
-            // No shorthand methods for these:
-            List<IMyBatteryBlock> batteries = new List<IMyBatteryBlock>();
-            List<IMyGasTank> hydrogentanks = new List<IMyGasTank>();
-            List<IMyGasTank> oxygentanks = new List<IMyGasTank>();
-            GridTerminalSystem.GetBlocksOfType<IMyBatteryBlock>(batteries, b => b.IsSameConstructAs(Me));
-            GridTerminalSystem.GetBlocksOfType<IMyGasTank>(hydrogentanks, b => b.IsSameConstructAs(Me) && b.DetailedInfo.Contains("Type: Hydrogen"));
-            GridTerminalSystem.GetBlocksOfType<IMyGasTank>(oxygentanks, b => b.IsSameConstructAs(Me) && b.DetailedInfo.Contains("Type: Oxygen"));
-
             float curPower = 0.0f;
             float maxPower = 0.0f;
             float curIn = 0.0f;
@@ -142,17 +116,32 @@ namespace IngameScript
                 curOut += batt.CurrentOutput;
             }
 
-            percentScreen(screens, 100.0f * curPower / maxPower);
-            rateScreen(screens2, curIn - curOut);
-            calcTanks(screensH2, hydrogentanks);
-            calcTanks(screensO2, oxygentanks);
+            GeneralPercent(batteriesPercentScreens, 100.0f * curPower / maxPower);
+            BatteriesRate(batteriesRateScreens, curIn - curOut);
+        }
 
-            screens.Clear();
-            screens2.Clear();
-            screensH2.Clear();
-            screensO2.Clear();
-            batteries.Clear();
-            hydrogentanks.Clear();
+        void Main(string arg)
+        {
+            Config.ConfigSection config = Config.Section(Me, configSection);
+            config.Get("Battery LCD", ref batteriesLCDName);
+            config.Get("Battery Rates LCD", ref batteriesRatesLCDName);
+            config.Get("Hydrogen LCD", ref tanksH2Name);
+            config.Get("Oxygen LCD", ref tanksO2Name);
+            config.Get("Image Prefix", ref imagePrefix);
+            config.Save();
+
+            MultiSurface batteriesPercentScreens = GetMultiSurfaceByName(batteriesLCDName, configSection);
+            MultiSurface batteriesRateScreens = GetMultiSurfaceByName(batteriesRatesLCDName, configSection);
+            MultiSurface tankH2PercentScreens = GetMultiSurfaceByName(tanksH2Name, configSection);
+            MultiSurface tankO2PercentScreens = GetMultiSurfaceByName(tanksO2Name, configSection);
+
+            List<IMyBatteryBlock> batteries = GetBlocksOfType<IMyBatteryBlock>();
+            List<IMyGasTank> hydrogentanks = GetBlocksOfType<IMyGasTank>(b => b.IsSameConstructAs(Me) && b.DetailedInfo.Contains("Type: Hydrogen"));
+            List<IMyGasTank> oxygentanks = GetBlocksOfType<IMyGasTank>(b => b.IsSameConstructAs(Me) && b.DetailedInfo.Contains("Type: Oxygen"));
+
+            ProcessBatteries(batteriesPercentScreens, batteriesRateScreens, batteries);
+            TanksPercent(tankH2PercentScreens, hydrogentanks);
+            TanksPercent(tankO2PercentScreens, oxygentanks);
         }
     }
 }
