@@ -126,13 +126,7 @@ namespace IngameScript
             /// Conveniance operator to slightly ease converting from LCDs to a MultiSurface.
             /// </summary>
             /// <param name="multiSurface">The MultiSurface to convert</param>
-            public static implicit operator List<IMyTextSurface>(MultiSurface multiSurface)
-            {
-                // I could also probably just return the surfaces list.
-                List<IMyTextSurface> ret = new List<IMyTextSurface>();
-                ret.Add(multiSurface);
-                return ret;
-            }
+            public static implicit operator List<IMyTextSurface>(MultiSurface multiSurface) => multiSurface.surfaces;
 
             public MultiSurface() { surfaces = new List<IMyTextSurface>(); }
             public MultiSurface(IMyTextSurface surface) : this() { Add(surface); }
