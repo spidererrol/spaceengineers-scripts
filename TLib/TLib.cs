@@ -21,7 +21,7 @@ namespace IngameScript
     partial class Program
     {
         #region TLib.cs
-        const String MULTIPLIERS = ".kMGTPEZY";
+        const string MULTIPLIERS = ".kMGTPEZY";
         System.Text.RegularExpressions.Regex reJumpDriveMaxPower = new System.Text.RegularExpressions.Regex(
         "Max Stored Power: (\\d+\\.?\\d*) (\\w?)Wh",
         System.Text.RegularExpressions.RegexOptions.Singleline);
