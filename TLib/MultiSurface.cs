@@ -141,7 +141,7 @@ namespace IngameScript
             public MultiSurface(IMyTextSurfaceProvider provider, int surface) : this() { Add(provider, surface); }
             public MultiSurface(List<IMyTextSurfaceProvider> providers, string surface) : this() { Add(providers, surface); }
             public MultiSurface(List<IMyTextSurfaceProvider> providers, int surface) : this() { Add(providers, surface); }
-            public MultiSurface(List<IMyTextSurfaceProvider> providers,List<IMyTextSurface> surfaces, ISurfaceFilter filter = null)
+            public MultiSurface(List<IMyTextSurfaceProvider> providers, List<IMyTextSurface> surfaces, ISurfaceFilter filter = null) : this()
             {
                 Add(surfaces);
                 Add(providers, filter);
@@ -191,20 +191,38 @@ namespace IngameScript
             public string Script { get { return surfaces.First().Script; } set { surfaces.ForEach(delegate (IMyTextSurface s) { s.Script = value; }); } }
             public ContentType ContentType { get { return surfaces.First().ContentType; } set { surfaces.ForEach(delegate (IMyTextSurface s) { s.ContentType = value; }); } }
 
-            public Vector2 SurfaceSize { get { throw new MethodNotAvailable(); } }
+            public Vector2 SurfaceSize
+            {
+                // This doesn't really make sense as the surfaces could be of differing sizes.
+                get { throw new MethodNotAvailable(); }
+            }
+            public List<Vector2> SurfaceSizes { get { return surfaces.ConvertAll<Vector2>(surface => surface.SurfaceSize); } }
 
-            public Vector2 TextureSize { get { throw new MethodNotAvailable(); } }
+            public Vector2 TextureSize
+            {
+                // This doesn't really make sense as the surfaces could be of differing sizes.
+                get { throw new MethodNotAvailable(); }
+            }
+            public List<Vector2> TextureSizes { get { return surfaces.ConvertAll<Vector2>(surface => surface.TextureSize); } }
 
             public bool PreserveAspectRatio { get { return surfaces.First().PreserveAspectRatio; } set { surfaces.ForEach(delegate (IMyTextSurface s) { s.PreserveAspectRatio = value; }); } }
             public float TextPadding { get { return surfaces.First().TextPadding; } set { surfaces.ForEach(delegate (IMyTextSurface s) { s.TextPadding = value; }); } }
             public Color ScriptBackgroundColor { get { return surfaces.First().ScriptBackgroundColor; } set { surfaces.ForEach(delegate (IMyTextSurface s) { s.ScriptBackgroundColor = value; }); } }
             public Color ScriptForegroundColor { get { return surfaces.First().ScriptForegroundColor; } set { surfaces.ForEach(delegate (IMyTextSurface s) { s.ScriptForegroundColor = value; }); } }
 
-            public string Name { get { throw new MethodNotAvailable(); } }
+            public string Name
+            {
+                // This doesn't really make sense as the surfaces likely have different Names.
+                get { throw new MethodNotAvailable(); }
+            }
 
-            public string DisplayName { get { throw new MethodNotAvailable(); } }
+            public string DisplayName
+            {
+                // This doesn't really make sense as the surfaces likely have different Names.
+                get { throw new MethodNotAvailable(); }
+            }
 
-            public string CurrentlyShownImage { get { throw new MethodNotAvailable(); } }
+            public string CurrentlyShownImage { get { return surfaces.First().CurrentlyShownImage; } }
 
             public void AddImagesToSelection(List<string> ids, bool checkExistence = false) => surfaces.ForEach(delegate (IMyTextSurface s) { s.AddImagesToSelection(ids, checkExistence); });
 
@@ -214,8 +232,15 @@ namespace IngameScript
 
             public MySpriteDrawFrame DrawFrame()
             {
+                // This doesn't really make sense as the surfaces could be of differing sizes.
                 throw new MethodNotAvailable();
             }
+
+            /// <summary>
+            /// If your code can draw to multiple frames, then this will provide them for you:
+            /// </summary>
+            /// <returns>A List of MySpriteDraw Frame. One for each IMyTextSurface.</returns>
+            public List<MySpriteDrawFrame> DrawFrames() => surfaces.ConvertAll<MySpriteDrawFrame>(s => s.DrawFrame());
 
             public IEnumerator GetEnumerator() => ((IEnumerable)surfaces).GetEnumerator();
 
@@ -223,25 +248,15 @@ namespace IngameScript
 
             public void GetScripts(List<string> scripts) => surfaces.First().GetScripts(scripts);
 
-            public void GetSelectedImages(List<string> output)
-            {
-                throw new MethodNotAvailable();
-            }
+            public void GetSelectedImages(List<string> output) => surfaces.First().GetSelectedImages(output);
 
             public void GetSprites(List<string> sprites) => surfaces.First().GetSprites(sprites);
 
-            public string GetText()
-            {
-                throw new MethodNotAvailable();
-            }
+            public string GetText() => surfaces.First().GetText();
 
             public Vector2 MeasureStringInPixels(StringBuilder text, string font, float scale) => surfaces.First().MeasureStringInPixels(text, font, scale);
 
-
-            public void ReadText(StringBuilder buffer, bool append = false)
-            {
-                throw new MethodNotAvailable();
-            }
+            public void ReadText(StringBuilder buffer, bool append = false) => surfaces.First().ReadText(buffer, append);
 
             public void RemoveImageFromSelection(string id, bool removeDuplicates = false) => surfaces.First().RemoveImageFromSelection(id, removeDuplicates);
 
