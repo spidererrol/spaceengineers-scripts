@@ -22,6 +22,35 @@ namespace IngameScript
     {
         public class ConsoleSurface : MultiSurface
         {
+            // This is a copy from TLib because I don't have access to that here:
+            private static List<IType> getObjectsByName<IType>(Program prog, string match, bool thisgrid = true)
+            {
+                List<IMyTerminalBlock> hits = new List<IMyTerminalBlock>();
+                if (match == "")
+                    throw new Exception("You mustn't call getObjectsByName() with an empty string!");
+                if (thisgrid)
+                    prog.GridTerminalSystem.SearchBlocksOfName(match, hits, block => block.IsSameConstructAs(prog.Me));
+                else
+                    prog.GridTerminalSystem.SearchBlocksOfName(match, hits);
+                List<IType> ret = new List<IType>();
+                for (int i = 0; i < hits.Count; i++)
+                {
+                    IType thing;
+                    try
+                    {
+                        thing = (IType)hits[i];
+                        if (thing == null)
+                            continue;
+                        ret.Add(thing);
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+                }
+                return ret;
+            }
+
             public class KeyBuilder
             {
                 private readonly List<string> parts;
@@ -112,11 +141,57 @@ namespace IngameScript
             }
             public static ISurfaceFilter MakeSurfaceOR(params ISurfaceFilter[] filters) => new SurfaceORFilter(filters);
 
+            public const string ShowOnScreenPrefix = "ShowOnScreen_";
             public static ConsoleSurface.ISurfaceFilter ShowOnScreenFilter(string SectionName) => ConsoleSurface.MakeSurfaceOR(
-                    ConsoleSurface.MakeSurfaceConfigFilter(SectionName, "ShowOnScreen_", ConsoleSurface.KeyBuilder.SURFACEDISPLAYNAME),
-                    ConsoleSurface.MakeSurfaceConfigFilter(SectionName, "ShowOnScreen_", ConsoleSurface.KeyBuilder.SURFACEIDNAME),
-                    ConsoleSurface.MakeSurfaceConfigFilter(SectionName, "ShowOnScreen_", ConsoleSurface.KeyBuilder.SURFACEPOS)
+                    ConsoleSurface.MakeSurfaceConfigFilter(SectionName, ShowOnScreenPrefix, ConsoleSurface.KeyBuilder.SURFACEDISPLAYNAME),
+                    ConsoleSurface.MakeSurfaceConfigFilter(SectionName, ShowOnScreenPrefix, ConsoleSurface.KeyBuilder.SURFACEIDNAME),
+                    ConsoleSurface.MakeSurfaceConfigFilter(SectionName, ShowOnScreenPrefix, ConsoleSurface.KeyBuilder.SURFACEPOS)
                     );
+
+            /// <summary>
+            /// This provides an easy way to get a console which can be Echo, on the Programming Block screen and/or on other screens.
+            /// If either of <paramref name="consoleTag"/> or <paramref name="sectionName"/> are missing or null then other screens will not be used.
+            /// </summary>
+            /// <remarks>
+            /// You shouldn't put <paramref name="consoleTag"/> on the current Programming Block if you have <paramref name="onSelf"/> set as you will likely
+            /// get dual output.
+            /// </remarks>
+            /// <param name="prog">(REQUIRED) should be <c>this</c></param>
+            /// <param name="consoleTag">What other blocks must have in their CustomName in order to use their screen(s)</param>
+            /// <param name="sectionName">The configuration section name to use when enabling individual screens from CustomData</param>
+            /// <param name="useEcho">Use <c>Echo(...)</c> to output to the Programming Block interface</param>
+            /// <param name="onSelf">Use the screen(s) on this Programming Block. Will use CustomData if sectionName is set, otherwise force screen 0.</param>
+            /// <returns></returns>
+            public static ConsoleSurface EasyConsole(Program prog, string consoleTag =null, string sectionName =null, bool useEcho = true, bool onSelf = true)
+            {
+                IMyProgrammableBlock Me = prog.Me;
+                ConsoleSurface console;
+                ConsoleSurface.ISurfaceFilter filter = ConsoleSurface.ShowOnScreenFilter(sectionName);
+                if (consoleTag != null && sectionName != null)
+                {
+                    List<IMyTextSurfaceProvider> providers = getObjectsByName<IMyTextSurfaceProvider>(prog, consoleTag);
+                    console = new ConsoleSurface(prog, providers, filter, useEcho);
+
+                    // Things which only have one surface (eg Text Panels):
+                    List<IMyTextSurface> panels = getObjectsByName<IMyTextSurface>(prog, consoleTag);
+                    console.Add(panels);
+                }
+                else
+                {
+                    console = new ConsoleSurface(prog, useEcho);
+                }
+                if (onSelf && sectionName != null)
+                {
+                    Config.ConfigSection conf = Config.Section(Me, sectionName);
+                    conf.Default(ShowOnScreenPrefix + Me.GetSurface(0).DisplayName, true);
+                    conf.Save();
+                    console.Add(Me, filter);
+                } else if (onSelf)
+                {
+                    console.Add(Me, 0);
+                }
+                return console;
+            }
 
             public delegate void EchoFunc(string msg);
 
