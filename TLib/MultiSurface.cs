@@ -23,6 +23,103 @@ namespace IngameScript
     {
         public class MultiSurface : IMyTextSurface, IEnumerable
         {
+            public class KeyBuilder
+            {
+                private readonly List<string> parts;
+                public const string SURFACEDISPLAYNAME = "[displayname]";
+                public const string SURFACEIDNAME = "[idname]";
+                public const string SURFACEPOS = "[pos]";
+
+                public KeyBuilder() { parts = new List<string>(); }
+                public KeyBuilder(params string[] moreparts) : this() { parts.AddArray(moreparts); }
+
+                public KeyBuilder Add(string part) { parts.Add(part); return this; }
+
+                public string Build(string displayname, string idname, int pos)
+                {
+                    string ret = "";
+                    parts.ForEach(delegate (string s)
+                    {
+                        if (s == SURFACEIDNAME)
+                            ret += idname;
+                        else if (s == SURFACEDISPLAYNAME)
+                            ret += displayname;
+                        else if (s == SURFACEPOS)
+                            ret += pos.ToString();
+                        else
+                            ret += s;
+                    });
+                    return ret;
+                }
+            }
+
+            public interface ISurfaceFilter
+            {
+                List<IMyTextSurface> Surfaces(IMyTextSurfaceProvider provider);
+            }
+
+            public class SurfaceConfigFilter : ISurfaceFilter
+            {
+
+                private readonly string section;
+                private readonly KeyBuilder keypattern;
+
+                public string Section => section;
+
+                public string Key(string displayname, string idname, int pos) => keypattern.Build(displayname, idname, pos);
+
+                public SurfaceConfigFilter(string configSection, KeyBuilder configKey)
+                {
+                    section = configSection;
+                    keypattern = configKey;
+                }
+
+                public List<IMyTextSurface> Surfaces(IMyTextSurfaceProvider block)
+                {
+                    List<IMyTextSurface> surfaces = new List<IMyTextSurface>();
+                    Config.ConfigSection config = Config.Section((IMyTerminalBlock)block, section);
+                    for (int i = 0; i < block.SurfaceCount; i++)
+                    {
+                        IMyTextSurface surface = block.GetSurface(i);
+                        if (config.Get(Key(surface.DisplayName, surface.Name, i), false))
+                            surfaces.Add(surface);
+                    }
+                    return surfaces;
+                }
+            }
+
+            public static ISurfaceFilter MakeSurfaceConfigFilter(string section, params string[] keyparts) => new SurfaceConfigFilter(section, new KeyBuilder(keyparts));
+
+            public class SurfaceORFilter : ISurfaceFilter
+            {
+                private readonly List<ISurfaceFilter> filters;
+                private SurfaceORFilter() { filters = new List<ISurfaceFilter>(); }
+                public SurfaceORFilter(params ISurfaceFilter[] newfilters) : this()
+                {
+                    filters.AddArray(newfilters);
+                }
+
+                public void Add(ISurfaceFilter filter) => filters.Add(filter);
+
+                public List<IMyTextSurface> Surfaces(IMyTextSurfaceProvider provider)
+                {
+                    List<IMyTextSurface> surfaces = new List<IMyTextSurface>();
+                    foreach (ISurfaceFilter filter in filters)
+                    {
+                        surfaces.AddList(filter.Surfaces(provider));
+                    }
+                    return surfaces;
+                }
+            }
+            public static ISurfaceFilter MakeSurfaceOR(params ISurfaceFilter[] filters) => new SurfaceORFilter(filters);
+
+            public const string ShowOnScreenPrefix = "ShowOnScreen_";
+            public static ISurfaceFilter ShowOnScreenFilter(string SectionName) => MakeSurfaceOR(
+                    MakeSurfaceConfigFilter(SectionName, ShowOnScreenPrefix, KeyBuilder.SURFACEDISPLAYNAME),
+                    MakeSurfaceConfigFilter(SectionName, ShowOnScreenPrefix, KeyBuilder.SURFACEIDNAME),
+                    MakeSurfaceConfigFilter(SectionName, ShowOnScreenPrefix, KeyBuilder.SURFACEPOS)
+                    );
+
             protected List<IMyTextSurface> surfaces;
 
             public MultiSurface() { surfaces = new List<IMyTextSurface>(); }
@@ -52,6 +149,20 @@ namespace IngameScript
             public void Add(IMyTextSurfaceProvider provider, int surface) => surfaces.Add(provider.GetSurface(surface));
             public void Add(List<IMyTextSurfaceProvider> providers, string surface) => providers.ForEach(delegate (IMyTextSurfaceProvider p) { Add(p, surface); });
             public void Add(List<IMyTextSurfaceProvider> providers, int surface) => providers.ForEach(delegate (IMyTextSurfaceProvider p) { Add(p, surface); });
+            public void Add(IMyTextSurfaceProvider provider, ISurfaceFilter filter = null)
+            {
+                if (filter == null)
+                    Add(ProviderSurfaces(provider));
+                else
+                    surfaces.AddList(filter.Surfaces(provider));
+            }
+            public void Add(List<IMyTextSurfaceProvider> providers, ISurfaceFilter filter = null)
+            {
+                if (filter == null)
+                    providers.ForEach(delegate (IMyTextSurfaceProvider provider) { Add(ProviderSurfaces(provider)); });
+                else
+                    providers.ForEach(delegate (IMyTextSurfaceProvider provider) { surfaces.AddList(filter.Surfaces(provider)); });
+            }
 
             public float FontSize { get { return surfaces.First().FontSize; } set { surfaces.ForEach(delegate (IMyTextSurface s) { s.FontSize = value; }); } }
             public Color FontColor { get { return surfaces.First().FontColor; } set { surfaces.ForEach(delegate (IMyTextSurface s) { s.FontColor = value; }); } }

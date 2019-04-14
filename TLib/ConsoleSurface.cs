@@ -51,103 +51,6 @@ namespace IngameScript
                 return ret;
             }
 
-            public class KeyBuilder
-            {
-                private readonly List<string> parts;
-                public const string SURFACEDISPLAYNAME = "[displayname]";
-                public const string SURFACEIDNAME = "[idname]";
-                public const string SURFACEPOS = "[pos]";
-
-                public KeyBuilder() { parts = new List<string>(); }
-                public KeyBuilder(params string[] moreparts) : this() { parts.AddArray(moreparts); }
-
-                public KeyBuilder Add(string part) { parts.Add(part); return this; }
-
-                public string Build(string displayname, string idname, int pos)
-                {
-                    string ret = "";
-                    parts.ForEach(delegate (string s)
-                    {
-                        if (s == SURFACEIDNAME)
-                            ret += idname;
-                        else if (s == SURFACEDISPLAYNAME)
-                            ret += displayname;
-                        else if (s == SURFACEPOS)
-                            ret += pos.ToString();
-                        else
-                            ret += s;
-                    });
-                    return ret;
-                }
-            }
-
-            public interface ISurfaceFilter
-            {
-                List<IMyTextSurface> Surfaces(IMyTextSurfaceProvider provider);
-            }
-
-            public class SurfaceConfigFilter : ISurfaceFilter
-            {
-
-                private readonly string section;
-                private readonly KeyBuilder keypattern;
-
-                public string Section => section;
-
-                public string Key(string displayname, string idname, int pos) => keypattern.Build(displayname, idname, pos);
-
-                public SurfaceConfigFilter(string configSection, KeyBuilder configKey)
-                {
-                    section = configSection;
-                    keypattern = configKey;
-                }
-
-                public List<IMyTextSurface> Surfaces(IMyTextSurfaceProvider block)
-                {
-                    List<IMyTextSurface> surfaces = new List<IMyTextSurface>();
-                    Config.ConfigSection config = Config.Section((IMyTerminalBlock)block, section);
-                    for (int i = 0; i < block.SurfaceCount; i++)
-                    {
-                        IMyTextSurface surface = block.GetSurface(i);
-                        if (config.Get(Key(surface.DisplayName, surface.Name, i), false))
-                            surfaces.Add(surface);
-                    }
-                    return surfaces;
-                }
-            }
-
-            public static ISurfaceFilter MakeSurfaceConfigFilter(string section, params string[] keyparts) => new SurfaceConfigFilter(section, new KeyBuilder(keyparts));
-
-            public class SurfaceORFilter : ISurfaceFilter
-            {
-                private readonly List<ISurfaceFilter> filters;
-                private SurfaceORFilter() { filters = new List<ISurfaceFilter>(); }
-                public SurfaceORFilter(params ISurfaceFilter[] newfilters) : this()
-                {
-                    filters.AddArray(newfilters);
-                }
-
-                public void Add(ISurfaceFilter filter) => filters.Add(filter);
-
-                public List<IMyTextSurface> Surfaces(IMyTextSurfaceProvider provider)
-                {
-                    List<IMyTextSurface> surfaces = new List<IMyTextSurface>();
-                    foreach (ISurfaceFilter filter in filters)
-                    {
-                        surfaces.AddList(filter.Surfaces(provider));
-                    }
-                    return surfaces;
-                }
-            }
-            public static ISurfaceFilter MakeSurfaceOR(params ISurfaceFilter[] filters) => new SurfaceORFilter(filters);
-
-            public const string ShowOnScreenPrefix = "ShowOnScreen_";
-            public static ConsoleSurface.ISurfaceFilter ShowOnScreenFilter(string SectionName) => ConsoleSurface.MakeSurfaceOR(
-                    ConsoleSurface.MakeSurfaceConfigFilter(SectionName, ShowOnScreenPrefix, ConsoleSurface.KeyBuilder.SURFACEDISPLAYNAME),
-                    ConsoleSurface.MakeSurfaceConfigFilter(SectionName, ShowOnScreenPrefix, ConsoleSurface.KeyBuilder.SURFACEIDNAME),
-                    ConsoleSurface.MakeSurfaceConfigFilter(SectionName, ShowOnScreenPrefix, ConsoleSurface.KeyBuilder.SURFACEPOS)
-                    );
-
             /// <summary>
             /// This provides an easy way to get a console which can be Echo, on the Programming Block screen and/or on other screens.
             /// If either of <paramref name="consoleTag"/> or <paramref name="sectionName"/> are missing or null then other screens will not be used.
@@ -166,7 +69,7 @@ namespace IngameScript
             {
                 IMyProgrammableBlock Me = prog.Me;
                 ConsoleSurface console;
-                ConsoleSurface.ISurfaceFilter filter = ConsoleSurface.ShowOnScreenFilter(sectionName);
+                ISurfaceFilter filter = ShowOnScreenFilter(sectionName);
                 if (consoleTag != null && sectionName != null)
                 {
                     List<IMyTextSurfaceProvider> providers = getObjectsByName<IMyTextSurfaceProvider>(prog, consoleTag);
@@ -228,21 +131,6 @@ namespace IngameScript
             public ConsoleSurface(Program program, List<IMyTextSurfaceProvider> providers, ISurfaceFilter filter, bool doecho = true, EchoFunc echo = null) : this(program, doecho, echo)
             {
                 Add(providers, filter);
-            }
-
-            public void Add(IMyTextSurfaceProvider provider, ISurfaceFilter filter = null)
-            {
-                if (filter == null)
-                    Add(ProviderSurfaces(provider));
-                else
-                    surfaces.AddList(filter.Surfaces(provider));
-            }
-            public void Add(List<IMyTextSurfaceProvider> providers, ISurfaceFilter filter = null)
-            {
-                if (filter == null)
-                    providers.ForEach(delegate (IMyTextSurfaceProvider provider) { Add(ProviderSurfaces(provider)); });
-                else
-                    providers.ForEach(delegate (IMyTextSurfaceProvider provider) { surfaces.AddList(filter.Surfaces(provider)); });
             }
 
             protected void InitSurfaces()
