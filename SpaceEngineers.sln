@@ -18,6 +18,7 @@ Global
 		TLib\TLib.projitems*{47d20786-bdf8-44ec-8d4f-bd54154d0f98}*SharedItemsImports = 4
 		TLib\TLib.projitems*{4c1ef1f3-453b-43b0-8d93-53df99445125}*SharedItemsImports = 4
 		TLib\TLib.projitems*{5d8f5b6d-9402-4623-8caa-4020c90bd33d}*SharedItemsImports = 13
+		TLib\TLib.projitems*{6f854aca-53b9-47c8-a4fd-7a014ff82326}*SharedItemsImports = 4
 		TLib\TLib.projitems*{8b1a226d-4d69-43f1-872c-7aa71b00813b}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
