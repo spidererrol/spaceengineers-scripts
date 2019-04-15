@@ -127,6 +127,11 @@ namespace IngameScript
                     Set(key, defaultvalue);
                 return parent.Get(section, key).ToBoolean(defaultvalue);
             }
+            public MyIniValue Get(string key) => parent.Get(section, key);
+            public string GetString(string key) => Get(key).ToString();
+            public int GetInt(string key) => Get(key).ToInt32();
+            public float GetFloat(string key) => Get(key).ToSingle();
+            public bool GetBool(string key) => Get(key).ToBoolean();
 
             /// <summary>
             /// Shorthand for <c>value = section.Get(key,value);</c>
