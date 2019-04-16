@@ -103,6 +103,7 @@ namespace IngameScript
                 getBlocksByName<IMyLightingBlock>(MaintainanceTag).FindAll(b => !b.CustomName.Contains(MaintainanceAccessName)).ForEach(b => RunActions(b, "OnOff_" + OnOff));
                 getBlocksByName<IMyTextPanel>(MaintainanceTag).FindAll(b => !b.CustomName.Contains(MaintainanceAccessName)).ForEach(b => RunActions(b, "OnOff_" + OnOff));
                 getBlocksByName<IMyButtonPanel>(MaintainanceTag).FindAll(b => !b.CustomName.Contains(MaintainanceAccessName)).ForEach(b => RunActions(b, "OnOff_" + OnOff));
+                hatchStates[entityId] = now;
             }
         }
 
