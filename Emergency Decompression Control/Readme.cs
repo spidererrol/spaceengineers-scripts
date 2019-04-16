@@ -66,6 +66,33 @@
 
  3. Advanced Lighting control.
 
+ You can make a light change colours for each mode or invert the on/off behaviour. This is done
+ through a config section in the light's Custom Data.
+ The default section is as follows:
+    [EDC]
+    SealedColor=Off
+    LeakColor=On
+ To invert operation simply change On to Off and Off to On:
+    [EDC]
+    SealedColor=On
+    LeakColor=Off
+ To change colors, specify the color for each mode. Colors are either a name from VRageMath.Color
+ or an html-style "#" code.
+    [EDC]
+    SealedColor=#00ff00
+    LeakColor=Red
 
+ Further you can also control the blink mode of each light via the "SealedBlinkLength",
+ "SealedBlinkIntervalSeconds", "SealedBlinkOffset", and the "Leak" versions of these. See the 
+ "Blink" properties of IMyLightingBlock for the values of each.
+    [EDC]
+    SealedColor=Lime
+    SealedBlinkLength=0.0001
+    SealedBlinkIntervalSeconds=300
+    SealedBlinkOffset=0.8
+    LeakColor=Red
+    LeakBlinkLength=0.01
+    LeakBlinkIntervalSeconds=2
+    LeakBlinkOffset=0
 
 */
