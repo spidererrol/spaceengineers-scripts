@@ -49,6 +49,7 @@ namespace IngameScript
             config.Save();
 
             console = ConsoleSurface.EasyConsole(this, consoleTag: "Control Status", sectionName: "Pad Controller");
+            console.ClearScreen();
             actionLines = new List<string>();
 
             //double unixTime = DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;

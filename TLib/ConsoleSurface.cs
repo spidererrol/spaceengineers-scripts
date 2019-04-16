@@ -143,7 +143,7 @@ namespace IngameScript
                 ready = true;
             }
 
-            public void Clear() => InitSurfaces();
+            public void ClearScreen() => InitSurfaces();
 
             public void Echo(string msg)
             {
