@@ -51,14 +51,22 @@ namespace IngameScript
                 foreach (IMyTextSurface lcd in screens)
                 {
                     lcd.ContentType = ContentType.TEXT_AND_IMAGE;
-                    if (imagename != lcd.CurrentlyShownImage)
-                    {
-                        lcd.AddImageToSelection(imagename);
-                        lcd.RemoveImageFromSelection(lcd.CurrentlyShownImage);
-                    }
                     if (lcd.CurrentlyShownImage == null)
                     {
+                        Echo(lcd.DisplayName + ":---=> " + imagename);
                         lcd.AddImageToSelection(imagename);
+                    }
+                    if (imagename != lcd.CurrentlyShownImage)
+                    {
+                        Echo(lcd.DisplayName + ":" + lcd.CurrentlyShownImage + " => " + imagename);
+                        //lcd.RemoveImageFromSelection(lcd.CurrentlyShownImage, true);
+                        lcd.ClearImagesFromSelection();
+                        lcd.AddImageToSelection(imagename);
+                    }
+                    if (imagename != lcd.CurrentlyShownImage)
+                    {
+                        // If there are many images, this may appear for a short while whilst they are removed...
+                        lcd.WriteText("Unable to change images on this screen!");
                     }
                 }
                 return index;
@@ -129,6 +137,10 @@ namespace IngameScript
             config.Get("Oxygen LCD", ref tanksO2Name);
             config.Get("Image Prefix", ref imagePrefix);
             config.Save();
+
+            #region mdk macros
+            Echo("Version: $MDK_DATETIME$");
+            #endregion
 
             MultiSurface batteriesPercentScreens = GetMultiSurfaceByName(batteriesLCDName, configSection);
             MultiSurface batteriesRateScreens = GetMultiSurfaceByName(batteriesRatesLCDName, configSection);
