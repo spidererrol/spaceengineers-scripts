@@ -94,7 +94,7 @@ namespace IngameScript
                 DoorStatus was = hatchStates[entityId];
                 DoorStatus now = hatch.Status;
                 if (now == DoorStatus.Opening)
-                    now = DoorStatus.Open;
+                    now = DoorStatus.Closed; // This delays on until after opened to avoid the "Fridge Light" problem... (except it doesn't).
                 if (now == DoorStatus.Closing)
                     now = DoorStatus.Closed;
                 if (was == now)
