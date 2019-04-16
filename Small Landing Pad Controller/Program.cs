@@ -153,7 +153,7 @@ namespace IngameScript
                 switch (batt.ChargeMode)
                 {
                     case ChargeMode.Auto:
-                        battState += "A";
+                        battState += "~"; // "A" looks to much like "R" in the default font.
                         break;
                     case ChargeMode.Discharge:
                         battState += "D";
