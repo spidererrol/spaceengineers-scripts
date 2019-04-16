@@ -309,22 +309,14 @@ namespace IngameScript
             Color topColor = Col(topState);
             Color bottomColor = Col(bottomState);
 
-            string OnOff = "On";
-            if (topColor == Color.Black)
-                OnOff = "Off";
             foreach (IMyLightingBlock light in getBlocksByName<IMyLightingBlock>("Top"))
             {
                 light.Color = topColor;
-                RunActions(light, "OnOff_" + OnOff);
             }
 
-            OnOff = "On";
-            if (bottomColor == Color.Black)
-                OnOff = "Off";
             foreach (IMyLightingBlock light in getBlocksByName<IMyLightingBlock>("Bottom"))
             {
                 light.Color = bottomColor;
-                RunActions(light, "OnOff_" + OnOff);
             }
 
             Dictionary<string, SideStates> statesMap = new Dictionary<string, SideStates>();
