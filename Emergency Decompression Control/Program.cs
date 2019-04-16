@@ -46,15 +46,6 @@ namespace IngameScript
             Runtime.UpdateFrequency = UpdateFrequency.Update10;
         }
 
-        //public void Save() {
-        //    // Called when the program needs to save its state. Use
-        //    // this method to save your state to the Storage field
-        //    // or some other means. 
-        //    // 
-        //    // This method is optional and can be removed if not
-        //    // needed.
-        //}
-
         ConsoleSurface console;
 
         public void Save() => console = null;
