@@ -100,6 +100,7 @@ namespace IngameScript
                 if (was == now)
                     continue;
                 string OnOff = ((now == DoorStatus.Open) ? "On" : "Off");
+                console.Echo("Setting Maintainance to " + OnOff);
                 getBlocksByName<IMyLightingBlock>(MaintainanceTag).FindAll(b => !b.CustomName.Contains(MaintainanceAccessName)).ForEach(b => RunActions(b, "OnOff_" + OnOff));
                 getBlocksByName<IMyTextPanel>(MaintainanceTag).FindAll(b => !b.CustomName.Contains(MaintainanceAccessName)).ForEach(b => RunActions(b, "OnOff_" + OnOff));
                 getBlocksByName<IMyButtonPanel>(MaintainanceTag).FindAll(b => !b.CustomName.Contains(MaintainanceAccessName)).ForEach(b => RunActions(b, "OnOff_" + OnOff));
