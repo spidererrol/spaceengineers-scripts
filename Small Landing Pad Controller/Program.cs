@@ -61,7 +61,7 @@ namespace IngameScript
                 ProcessAction(config, states, argument);
 
             // Keep at end!
-            actionLines.ForEach(line => console.WriteText(line, true));
+            actionLines.ForEach(line => console.Echo(line));
             actionLines.Clear();
         }
 
@@ -69,7 +69,7 @@ namespace IngameScript
         {
             if (argument != "Top" && argument != "Bottom")
             {
-                console.WriteText("ERROR: Called with unknown command: " + argument);
+                console.Echo("ERROR: Called with unknown command: " + argument);
                 return;
             }
             SideStates state = states[argument];
@@ -166,14 +166,14 @@ namespace IngameScript
                 battState += ":" + battLevel.ToString("N0") + "%]";
                 batteryStates += battState;
             }
-            console.WriteText("Batteries:" + batteryStates, true);
+            console.Echo("Batteries:" + batteryStates);
 
             string reactorStates = "";
             foreach (IMyReactor reactor in reactors)
             {
                 reactorStates += "[" + (reactor.Enabled ? "On" : "Off") + "]";
             }
-            console.WriteText("Reactors:" + reactorStates, true);
+            console.Echo("Reactors:" + reactorStates);
 
             int providerBatts = 0;
             List<IMyBatteryBlock> fullBats = batteries.FindAll(batt => batt.CurrentStoredPower / batt.MaxStoredPower >= fulllevel);
