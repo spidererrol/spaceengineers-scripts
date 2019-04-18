@@ -277,6 +277,8 @@ namespace IngameScript
                 });
                 return allOk;
             }
+
+            public bool WriteLine(string value, bool append = true) => WriteText(value + "\n", append);
         }
     }
 }
