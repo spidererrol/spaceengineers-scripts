@@ -166,6 +166,30 @@ namespace IngameScript
                     }
                 }
             }
+
+            public void DumpPA(IMyTerminalBlock block)
+            {
+                List<ITerminalProperty> props = new List<ITerminalProperty>();
+                List<ITerminalAction> acts = new List<ITerminalAction>();
+                block.GetProperties(props);
+                block.GetActions(acts);
+                Echo("Block: " + block.CustomName);
+                Echo("Is A: " + block.BlockDefinition.TypeIdString + "." + block.BlockDefinition.SubtypeName);
+                Echo("Aka: " + block.GetType().ToString());
+                Echo("Properties:");
+                for (int i = 0; i < props.Count; i++)
+                {
+                    Echo(" " + props[i].TypeName + " " + props[i].Id);
+                }
+                Echo("Actions:");
+                for (int i = 0; i < acts.Count; i++)
+                {
+                    Echo(" " + acts[i].Id);
+                }
+                Echo("----");
+            }
+
+
         }
     }
 }

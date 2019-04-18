@@ -15,13 +15,51 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Small Landing Pad Controlle
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pad Lifter Control", "Pad Lifter Control\Pad Lifter Control.csproj", "{EF8864C9-4C27-4A6C-A6A8-8BC2E5992C2E}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "GetBlocks", "GetBlocks\GetBlocks.shproj", "{2C583596-20E0-4C07-B35D-29629F2D709E}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MultiSurface", "MultiSurface\MultiSurface.shproj", "{B50FC0F7-BE50-4560-86B8-996F6F1C2D16}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Config", "Config\Config.shproj", "{72902567-AEFF-4FDE-86CA-E2C62655285E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing", "Testing\Testing.csproj", "{233B804D-BC07-4B6C-B9AA-F06576E912BF}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Utility", "Utility\Utility.shproj", "{95803B2F-8472-4A93-B1F9-7F64CF81F211}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Config\Config.projitems*{233b804d-bc07-4b6c-b9aa-f06576e912bf}*SharedItemsImports = 4
+		GetBlocks\GetBlocks.projitems*{233b804d-bc07-4b6c-b9aa-f06576e912bf}*SharedItemsImports = 4
+		MultiSurface\MultiSurface.projitems*{233b804d-bc07-4b6c-b9aa-f06576e912bf}*SharedItemsImports = 4
+		TLib\TLib.projitems*{233b804d-bc07-4b6c-b9aa-f06576e912bf}*SharedItemsImports = 4
+		Utility\Utility.projitems*{233b804d-bc07-4b6c-b9aa-f06576e912bf}*SharedItemsImports = 4
+		GetBlocks\GetBlocks.projitems*{2c583596-20e0-4c07-b35d-29629f2d709e}*SharedItemsImports = 13
+		Config\Config.projitems*{47d20786-bdf8-44ec-8d4f-bd54154d0f98}*SharedItemsImports = 4
+		GetBlocks\GetBlocks.projitems*{47d20786-bdf8-44ec-8d4f-bd54154d0f98}*SharedItemsImports = 4
+		MultiSurface\MultiSurface.projitems*{47d20786-bdf8-44ec-8d4f-bd54154d0f98}*SharedItemsImports = 4
 		TLib\TLib.projitems*{47d20786-bdf8-44ec-8d4f-bd54154d0f98}*SharedItemsImports = 4
+		Utility\Utility.projitems*{47d20786-bdf8-44ec-8d4f-bd54154d0f98}*SharedItemsImports = 4
+		Config\Config.projitems*{4c1ef1f3-453b-43b0-8d93-53df99445125}*SharedItemsImports = 4
+		GetBlocks\GetBlocks.projitems*{4c1ef1f3-453b-43b0-8d93-53df99445125}*SharedItemsImports = 4
+		MultiSurface\MultiSurface.projitems*{4c1ef1f3-453b-43b0-8d93-53df99445125}*SharedItemsImports = 4
 		TLib\TLib.projitems*{4c1ef1f3-453b-43b0-8d93-53df99445125}*SharedItemsImports = 4
+		Utility\Utility.projitems*{4c1ef1f3-453b-43b0-8d93-53df99445125}*SharedItemsImports = 4
 		TLib\TLib.projitems*{5d8f5b6d-9402-4623-8caa-4020c90bd33d}*SharedItemsImports = 13
+		Config\Config.projitems*{6f854aca-53b9-47c8-a4fd-7a014ff82326}*SharedItemsImports = 4
+		GetBlocks\GetBlocks.projitems*{6f854aca-53b9-47c8-a4fd-7a014ff82326}*SharedItemsImports = 4
+		MultiSurface\MultiSurface.projitems*{6f854aca-53b9-47c8-a4fd-7a014ff82326}*SharedItemsImports = 4
 		TLib\TLib.projitems*{6f854aca-53b9-47c8-a4fd-7a014ff82326}*SharedItemsImports = 4
+		Utility\Utility.projitems*{6f854aca-53b9-47c8-a4fd-7a014ff82326}*SharedItemsImports = 4
+		Config\Config.projitems*{72902567-aeff-4fde-86ca-e2c62655285e}*SharedItemsImports = 13
+		Config\Config.projitems*{8b1a226d-4d69-43f1-872c-7aa71b00813b}*SharedItemsImports = 4
+		GetBlocks\GetBlocks.projitems*{8b1a226d-4d69-43f1-872c-7aa71b00813b}*SharedItemsImports = 4
+		MultiSurface\MultiSurface.projitems*{8b1a226d-4d69-43f1-872c-7aa71b00813b}*SharedItemsImports = 4
 		TLib\TLib.projitems*{8b1a226d-4d69-43f1-872c-7aa71b00813b}*SharedItemsImports = 4
+		Utility\Utility.projitems*{8b1a226d-4d69-43f1-872c-7aa71b00813b}*SharedItemsImports = 4
+		Utility\Utility.projitems*{95803b2f-8472-4a93-b1f9-7f64cf81f211}*SharedItemsImports = 13
+		MultiSurface\MultiSurface.projitems*{b50fc0f7-be50-4560-86b8-996f6f1c2d16}*SharedItemsImports = 13
+		Config\Config.projitems*{ef8864c9-4c27-4a6c-a6a8-8bc2e5992c2e}*SharedItemsImports = 4
+		GetBlocks\GetBlocks.projitems*{ef8864c9-4c27-4a6c-a6a8-8bc2e5992c2e}*SharedItemsImports = 4
+		MultiSurface\MultiSurface.projitems*{ef8864c9-4c27-4a6c-a6a8-8bc2e5992c2e}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -37,6 +75,8 @@ Global
 		{6F854ACA-53B9-47C8-A4FD-7A014FF82326}.Debug|x64.Build.0 = Debug|x64
 		{EF8864C9-4C27-4A6C-A6A8-8BC2E5992C2E}.Debug|x64.ActiveCfg = Debug|x64
 		{EF8864C9-4C27-4A6C-A6A8-8BC2E5992C2E}.Debug|x64.Build.0 = Debug|x64
+		{233B804D-BC07-4B6C-B9AA-F06576E912BF}.Debug|x64.ActiveCfg = Debug|x64
+		{233B804D-BC07-4B6C-B9AA-F06576E912BF}.Debug|x64.Build.0 = Debug|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

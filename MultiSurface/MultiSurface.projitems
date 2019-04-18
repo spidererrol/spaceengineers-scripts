@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>b50fc0f7-be50-4560-86b8-996f6f1c2d16</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>MultiSurface</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ConsoleSurface.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MethodNotAvailable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MultiSurface-GetBlocks.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MultiSurface.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)README.md" />
+  </ItemGroup>
+</Project>

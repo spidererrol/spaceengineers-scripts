@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{6F854ACA-53B9-47C8-A4FD-7A014FF82326}</ProjectGuid>
+    <ProjectGuid>{233B804D-BC07-4B6C-B9AA-F06576E912BF}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>IngameScript</RootNamespace>
-    <AssemblyName>Small Landing Pad Controller</AssemblyName>
+    <AssemblyName>Testing</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -105,10 +105,10 @@
     <AdditionalFiles Include="thumb.png" />
     <AdditionalFiles Include="MDK\whitelist.cache" />
   </ItemGroup>
-  <Import Project="..\TLib\TLib.projitems" Label="Shared" />
-  <Import Project="..\MultiSurface\MultiSurface.projitems" Label="Shared" />
-  <Import Project="..\GetBlocks\GetBlocks.projitems" Label="Shared" />
   <Import Project="..\Config\Config.projitems" Label="Shared" />
+  <Import Project="..\GetBlocks\GetBlocks.projitems" Label="Shared" />
+  <Import Project="..\MultiSurface\MultiSurface.projitems" Label="Shared" />
+  <Import Project="..\TLib\TLib.projitems" Label="Shared" />
   <Import Project="..\Utility\Utility.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterBuild">

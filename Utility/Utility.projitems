@@ -3,12 +3,13 @@
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
-    <SharedGUID>5d8f5b6d-9402-4623-8caa-4020c90bd33d</SharedGUID>
+    <SharedGUID>95803b2f-8472-4a93-b1f9-7f64cf81f211</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>TLib</Import_RootNamespace>
+    <Import_RootNamespace>Utility</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)TLib.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility-GetBlocksClass.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility.cs" />
   </ItemGroup>
 </Project>
