@@ -22,12 +22,12 @@ namespace IngameScript
     {
         public class ConsoleSurface : MultiSurface
         {
-            // This is a copy from TLib because I don't have access to that here:
-            private static List<IType> getObjectsByName<IType>(Program prog, string match, bool thisgrid = true)
+            // This is a copy from GetBlocks because I don't want to require that just for this:
+            private static List<IType> GetObjectsByName<IType>(Program prog, string match, bool thisgrid = true)
             {
                 List<IMyTerminalBlock> hits = new List<IMyTerminalBlock>();
                 if (match == "")
-                    throw new Exception("You mustn't call getObjectsByName() with an empty string!");
+                    throw new Exception("You mustn't call GetObjectsByName() with an empty string!");
                 if (thisgrid)
                     prog.GridTerminalSystem.SearchBlocksOfName(match, hits, block => block.IsSameConstructAs(prog.Me));
                 else
@@ -72,11 +72,11 @@ namespace IngameScript
                 ISurfaceFilter filter = ShowOnScreenFilter(sectionName);
                 if (consoleTag != null && sectionName != null)
                 {
-                    List<IMyTextSurfaceProvider> providers = getObjectsByName<IMyTextSurfaceProvider>(prog, consoleTag);
+                    List<IMyTextSurfaceProvider> providers = GetObjectsByName<IMyTextSurfaceProvider>(prog, consoleTag);
                     console = new ConsoleSurface(prog, providers, filter, useEcho);
 
                     // Things which only have one surface (eg Text Panels):
-                    List<IMyTextSurface> panels = getObjectsByName<IMyTextSurface>(prog, consoleTag);
+                    List<IMyTextSurface> panels = GetObjectsByName<IMyTextSurface>(prog, consoleTag);
                     console.Add(panels);
                 }
                 else
