@@ -39,7 +39,7 @@ namespace IngameScript
             {
                 List<IMyTerminalBlock> hits = new List<IMyTerminalBlock>();
                 if (match == "")
-                    throw new Exception("You mustn't call getObjectsByName() with an empty string!");
+                    throw new Exception("You mustn't call GetBlocks.ByName() with an empty string!");
                 if (thisgrid)
                     GridTerminalSystem.SearchBlocksOfName(match, hits, myGridOnly);
                 else
