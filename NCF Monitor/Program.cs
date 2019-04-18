@@ -20,9 +20,12 @@ namespace IngameScript
 {
     partial class Program : MyGridProgram
     {
+        private const string SectionName = "NCF Monitor";
+
         // NaniteMonitorModified.cs
 
-        string NaniteTag = "Main Base";
+        string NaniteTag = "NCF Main Base";
+        string ConsoleTag = "[NCF Console]";
 
         void Debug(string msg)
         {
@@ -34,13 +37,24 @@ namespace IngameScript
             Runtime.UpdateFrequency = UpdateFrequency.Update10;
         }
 
+        public IMyTerminalBlock GetNaniteControl() => GetBlocks.FirstByName<IMyTerminalBlock>(NaniteTag, b => b.IsSameConstructAs(Me) && b.BlockDefinition.SubtypeName.Contains("NaniteControl"));
+        public IMyTerminalBlock GetNaniteOre() => GetBlocks.FirstByName<IMyTerminalBlock>(NaniteTag, b => b.BlockDefinition.SubtypeName.Contains("NaniteOre"));
+
         public void Main(string realargument)
         {
-            Config.ConfigSection config = Config.Section(Me, "NCF Monitor");
+            Config.ConfigSection config = Config.Section(Me, SectionName);
             config.Get("Tag", ref NaniteTag);
+            config.SetComment("Tag", "How non-debug blocks are tagged");
+            config.Get("Console", ref ConsoleTag);
+            config.SetComment("Console", "How debug lcd blocks are tagged");
             config.Save();
-            
-            var nf = GridTerminalSystem.GetBlockWithName("Nanite Control Factory - " + NaniteTag) as IMyTerminalBlock;
+
+            ConsoleSurface con = ConsoleSurface.EasyConsole(this, ConsoleTag, SectionName);
+            ConsoleSurface.EchoFunc Echo = con.GetEcho(); // Magically redirect Echo in this function to the con version!
+
+            IMyTerminalBlock nf = GetNaniteControl();
+            IMyTerminalBlock nh = GetNaniteOre();
+
             Echo("Find NF");
             string[] NFStat = { "" };
             if (nf != null)
@@ -49,50 +63,37 @@ namespace IngameScript
                 Echo("Got NF");
             }
 
-            var nh = GridTerminalSystem.GetBlockWithName("NUHOL - " + NaniteTag) as IMyTerminalBlock;
             string[] NHStat = { "" };
             if (nh != null)
             {
                 NHStat = nh.CustomInfo.Split('\n');
             }
 
-            var ld = GridTerminalSystem.GetBlockWithName("LCD-NanitePanel_" + NaniteTag) as IMyTextPanel;
-            Echo("Got LCD");
+            MultiSurface ld = GetBlocks.MultiSurfaceByName(NaniteTag, SectionName);
+            con.Echo("Got LCD");
+            ld.ContentType = VRage.Game.GUI.TextPanel.ContentType.TEXT_AND_IMAGE;
             ld.WriteText("", false);
-            IMyConveyorSorter sorter = getBlockByName<IMyConveyorSorter>("[" + NaniteTag + "]");
+            IMyConveyorSorter sorter = GetBlocks.FirstByName<IMyConveyorSorter>(NaniteTag);
 
             ld.WriteText("-= Nanite Factory =- \n", false);
 
             Echo("Parsing NF");
+            bool isActive = true;
             for (int i = 0; i < NFStat.Length; i++)
             {
 
                 if (NFStat[i].IndexOf("Status") >= 0)
                 {
+                    isActive = false;
                     ld.WriteText("Status: " + NFStat[i].Split(':')[1] + "\n", true);
-                    if (sorter != null)
-                    {
-                        if (NFStat[i].Split(':')[1].Trim() == "Enabled" || NFStat[i].Split(':')[1].Trim() == "Disabled")
-                        {
-                            if (!sorter.GetValueBool("DrainAll"))
-                            {
-                                ITerminalAction act = sorter.GetActionWithName("DrainAll");
-                                act.Apply(sorter);
-                            }
-                        }
-                        else
-                        {
-                            if (sorter.GetValueBool("DrainAll"))
-                            {
-                                ITerminalAction act = sorter.GetActionWithName("DrainAll");
-                                act.Apply(sorter);
-                            }
-                        }
-                    }
+
                 }
                 if (NFStat[i].IndexOf("Active Nanites") >= 0)
                 {
-                    ld.WriteText("Active: " + NFStat[i].Split(':')[1] + "\n", true);
+                    int activeNanites = int.Parse(NFStat[i].Split(':')[1]);
+                    ld.WriteText("Active: " + activeNanites.ToString() + "\n", true);
+                    if (activeNanites > 0)
+                        isActive = true;
                 }
                 if (NFStat[i].IndexOf("Current Power") >= 0)
                 {
@@ -163,11 +164,45 @@ namespace IngameScript
             }
 
             ld.WriteText("\n", true);
-            if (sorter == null)
+
+            if (sorter != null)
             {
-                ld.WriteText("No Drain Found!\n", true);
+                if (isActive)
+                {
+                    if (!sorter.GetValueBool("DrainAll"))
+                    {
+                        ITerminalAction act = sorter.GetActionWithName("DrainAll");
+                        act.Apply(sorter);
+                    }
+                }
+                else
+                {
+                    if (sorter.GetValueBool("DrainAll"))
+                    {
+                        ITerminalAction act = sorter.GetActionWithName("DrainAll");
+                        act.Apply(sorter);
+                    }
+                }
             }
-            else
+            else if (nf.CustomName.Contains("["))
+            {
+                if (isActive)
+                {
+                    if (nf.CustomName.Contains("[!"))
+                    {
+                        nf.CustomName = nf.CustomName.Replace("[!", "[");
+                    }
+                }
+                else
+                {
+                    if (!nf.CustomName.Contains("[!"))
+                    {
+                        nf.CustomName = nf.CustomName.Replace("[", "[!");
+                    }
+                }
+            }
+
+            if (sorter != null)
             {
                 if (sorter.GetValueBool("DrainAll"))
                 {
@@ -178,9 +213,24 @@ namespace IngameScript
                     ld.WriteText("Drain INACTIVE\n", true);
                 }
             }
-
+            else if (nf.CustomName.Contains("["))
+            {
+                if (nf.CustomName.Contains("[!"))
+                {
+                    ld.WriteText("Drain active\n", true);
+                }
+                else
+                {
+                    ld.WriteText("Drain INACTIVE\n", true);
+                }
+            }
+            else
+            {
+                ld.WriteText("No Drain Found!\n", true);
+            }
 
             Echo("Done");
+            //*/
         }
 
     }
