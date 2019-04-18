@@ -20,53 +20,27 @@ namespace IngameScript
 {
     partial class Program : MyGridProgram
     {
-        /***** FIXME: Lifter will effectively use Pad's batteries when connected! Possibly fit a battery in lifter and set     
-                          to always on when "Pad Connector" is connected and always charging when "Dock Connector" is     
-                          connected? Possibly fully off at other times as long as there are working reactors? Or just charge      
-                          from reactors. Or just change over to batteries with no reactors?     
-                          ** I don't want to turn off Pad's batteries because they may not be able to turn on again (eg on game     
-                          load)     
-  */
+        private const string Section = "Pad Lifter Control";
+        string tag = "[PLC]";
+        string debugTag = "[PLC Debug]";
 
-        IMyProgrammableBlock self = null;
-        IMyTextPanel status = null;
+        ConsoleSurface con;
+        MultiSurface status;
         Int32 unixTimestamp;
         bool retrying = false;
         int stage = 0;
         string stagedcommand = "";
 
-        public void FindMyBlocks<bt>(List<bt> outlist, IMyTerminalBlock refblock, string namefilter = null) where bt : IMyTerminalBlock
+        public Program()
         {
-            List<IMyTerminalBlock> items = new List<IMyTerminalBlock>();
-            GridTerminalSystem.GetBlocksOfType<bt>(items);
-            for (int i = 0; i < items.Count; i++)
-            {
-                if (items[i].CubeGrid != refblock.CubeGrid)
-                    continue;
-                if (namefilter != null && items[i].CustomName != namefilter)
-                    continue;
-                outlist.Add((bt)items[i]);
-            }
-            return;
-        }
-        public void FindMyBlocks<bt>(List<bt> outlist, string namefilter = null)
-        {
-            FindMyBlocks(outlist, self as IMyTerminalBlock, namefilter);
-        }
-        public bt GetMyBlockWithName<bt>(string name, IMyTerminalBlock refblock = null)
-        {
-            List<bt> blocks = new List<bt>();
-            if (refblock == null)
-                refblock = self;
-            FindMyBlocks(blocks, refblock, name);
-            return blocks[0];
+            Runtime.UpdateFrequency = UpdateFrequency.Update10;
         }
 
         void MyEcho(string s)
         {
-            Echo(s);
+            con.Echo(s);
             if (status != null)
-                status.WritePublicText(s + "\n", true);
+                status.WriteText(s + "\n", true);
         }
         Dictionary<string, Int32> stickies = new Dictionary<string, Int32>();
         void StickyMessage(string msg)
@@ -86,37 +60,101 @@ namespace IngameScript
             }
         }
 
+        // Ripped from Small Landing Pad Controller:
+        public enum SideStates
+        {
+            Unknown,
+            Unlocked,
+            Auto,
+            Ready,
+            Locked
+        }
+        void Best(ref SideStates first, SideStates second)
+        {
+            if (first < second)
+                first = second;
+        }
+        public static SideStates Convert(IMyShipConnector connector)
+        {
+            switch (connector.Status)
+            {
+                case MyShipConnectorStatus.Connectable:
+                    return SideStates.Ready;
+                case MyShipConnectorStatus.Connected:
+                    return SideStates.Locked;
+                case MyShipConnectorStatus.Unconnected:
+                    return SideStates.Unlocked;
+            }
+            throw new Exception("Out Of Cheese Error");
+        }
+        public static SideStates Convert(IMyLandingGear gear)
+        {
+            switch (gear.LockMode)
+            {
+                case LandingGearMode.Locked:
+                    return SideStates.Locked;
+                case LandingGearMode.ReadyToLock:
+                    return SideStates.Ready;
+                case LandingGearMode.Unlocked:
+                    if (gear.AutoLock)
+                        return SideStates.Auto;
+                    return SideStates.Unlocked;
+            }
+            throw new Exception("Out Of Cheese Error");
+        }
+
+        void Best(ref SideStates first, IMyShipConnector second) => Best(ref first, Convert(second));
+        void Best(ref SideStates first, IMyLandingGear second) => Best(ref first, Convert(second));
+
+        Color Col(SideStates state)
+        {
+            switch (state)
+            {
+                case SideStates.Locked:
+                    return Color.Lime;
+                case SideStates.Ready:
+                    return Color.Yellow;
+                case SideStates.Unlocked:
+                    return Color.Black;
+                case SideStates.Auto:
+                    return Color.Blue;
+                case SideStates.Unknown:
+                    return Color.Red;
+            }
+            throw new Exception("Out Of Cheese Error");
+        }
+        // End
+
         void Main(string argument)
         {
             if (argument == null)
                 argument = "";
 
+            Config.ConfigSection config = Config.Section(Me, Section);
+            config.Get("Tag", tag);
+            config.SetComment("Tag", "Tag to identify related blocks");
+            config.Get("ConsoleTag", debugTag);
+            config.SetComment("ConsoleTag", "Tag to output detailed information to");
+            config.Save();
+
+            con = ConsoleSurface.EasyConsole(this, debugTag, Section);
+            ConsoleSurface.EchoFunc Echo = con.GetEcho();
+
             unixTimestamp = (Int32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
 
-            List<IMyTerminalBlock> progs = new List<IMyTerminalBlock>();
-            GridTerminalSystem.GetBlocksOfType<IMyProgrammableBlock>(progs);
-            for (int i = 0; i < progs.Count; i++)
-            {
-                IMyProgrammableBlock prog = progs[i] as IMyProgrammableBlock;
-                if (prog.IsRunning)
-                {       // I've only ever seen one prog running at a time. I hope this holds true.     
-                    self = prog;
-                    break;
-                }
-            }
-
-            status = GetMyBlockWithName<IMyTextPanel>("Port Text Panel", self);
+            status = GetBlocks.MultiSurfaceByName(tag, Section);
             if (status != null)
             {
-                status.WritePublicText("");
+                status.ContentType = VRage.Game.GUI.TextPanel.ContentType.TEXT_AND_IMAGE;
+                status.WriteText("");
             }
             else
             {
-                MyEcho("Failed to find status screen");
+                Echo("Failed to find status screen");
             }
             MyEcho(System.DateTime.Now.ToString("dd MMM yyyy h:mm tt\n"));
 
-            IMyShipConnector conn = GetMyBlockWithName<IMyShipConnector>("Pad Connector");
+            IMyShipConnector conn = GetBlocks.FirstByName<IMyShipConnector>("Pad Connector");
             if (conn == null)
             {
                 MyEcho("I can't find 'Pad Connector' connected to me!");
@@ -126,98 +164,47 @@ namespace IngameScript
             IMyShipConnector other = conn.OtherConnector;
             List<IMyLandingGear> topGears = new List<IMyLandingGear>();
             List<IMyLandingGear> bottomGears = new List<IMyLandingGear>();
-            bool anyTopLocked = false;
-            bool anyBottomLocked = false;
-            bool anyTopNear = false;
-            bool anyBottomNear = false;
-            bool anyTopAuto = false;
-            bool anyBottomAuto = false;
+            SideStates topState = SideStates.Unknown;
+            SideStates bottomState = SideStates.Unknown;
+
+            GetBlocksClass GetOther = null;
 
             if (other != null)
             {
-                List<IMyLandingGear> gears = new List<IMyLandingGear>();
-                FindMyBlocks(gears, other);
-                for (int i = 0; i < gears.Count; i++)
+                GetOther = GetBlocks.OtherGrid(other);
+
+                List<IMyLandingGear> gears = GetOther.ByType<IMyLandingGear>();
+                foreach (IMyLandingGear gear in gears)
                 {
-                    IMyLandingGear gear = gears[i];
-                    bool isNear = false;
-                    bool isLocked = false;
-                    bool isAuto = false;
                     bool isTop = gear.CustomName.Contains("Top");
                     if (isTop)
-                        topGears.Add(gear);
+                        Best(ref topState, gear);
                     else
-                        bottomGears.Add(gear);
-                    string[] details = gear.DetailedInfo.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.None);
-                    for (int a = 0; a < details.Length; a++)
-                    {
-                        string[] dets = details[a].Split(':');
-                        string command = dets[0];
-                        string value = dets[1].Trim();
-                        if (command.StartsWith("Lock State"))
-                        {
-                            if (value.StartsWith("Ready To Lock"))
-                            {
-                                isNear = true;
-                                if (isTop)
-                                    anyTopNear = true;
-                                else
-                                    anyBottomNear = true;
-                            }
-                            else if (value.StartsWith("Locked") || gear.IsLocked)
-                            {
-                                isLocked = true;
-                                if (isTop)
-                                    anyTopLocked = true;
-                                else
-                                    anyBottomLocked = true;
-                            }
-                            else if (value.StartsWith("Auto"))
-                            {
-                                // This doesn't happen, so is a place holder for now.      
-                                isAuto = true;
-                                if (isTop)
-                                    anyTopAuto = true;
-                                else
-                                    anyBottomAuto = true;
-                            }
-                        }
-                    }
+                        Best(ref bottomState, gear);
                 }
             }
 
-            if (conn.IsConnected)
+            if (conn.Status == MyShipConnectorStatus.Connected)
             {
-                if (status != null)
-                    status.ShowPublicTextOnScreen();
-                if (anyTopLocked)
-                    MyEcho("Top: Locked");
-                else if (anyTopNear)
-                    MyEcho("Top: Ready");
-                else if (anyTopAuto)
-                    MyEcho("Top: Auto");
-                else
-                    MyEcho("Top: Off");
-
-                if (anyBottomLocked)
-                    MyEcho("Bottom: Locked");
-                else if (anyBottomNear)
-                    MyEcho("Bottom: Ready");
-                else if (anyBottomAuto)
-                    MyEcho("Bottom: Auto");
-                else
-                    MyEcho("Bottom: Off");
+                MyEcho("Top: " + topState.ToString());
+                MyEcho("Bottom: " + bottomState.ToString());
             }
             else if (argument == "")
             {
                 if (status != null)
                 {
-                    status.ClearImagesFromSelection();
+                    //status.ClearImagesFromSelection();
+                    string targImage;
                     if (conn.Enabled)
-                        status.AddImageToSelection("Offline");
+                        targImage = "Offline";
                     else
-                        status.AddImageToSelection("Arrow");
-                    status.ShowTextureOnScreen();
+                        targImage = "Arrow";
+
+                    //status.AddImageToSelection(targImage);
+                    status.WriteText("", false);
+                    if (status.CurrentlyShownImage == null || status.CurrentlyShownImage == "")
+                        status.WriteLine(targImage);
+                    status = null; // Disable text output for the rest of this round.
                 }
             }
             MyEcho("");
@@ -235,14 +222,13 @@ namespace IngameScript
 
             MyEcho("Command: " + argument);
 
-            if (!conn.IsConnected)
+            if (conn.Status == MyShipConnectorStatus.Connectable)
             {
-                status.ShowPublicTextOnScreen();
                 MyEcho("Connecting");
                 conn.GetActionWithName("Lock").Apply(conn);
             }
 
-            if (!conn.IsConnected)
+            if (conn.Status != MyShipConnectorStatus.Connected || GetOther == null)
             {
                 if (retrying)
                 {
@@ -253,7 +239,7 @@ namespace IngameScript
                 }
                 StickyMessage("Please wait...");
                 retrying = true;
-                IMyTimerBlock timer = GetMyBlockWithName<IMyTimerBlock>("Re" + argument + " Timer");
+                IMyTimerBlock timer = GetBlocks.FirstByName<IMyTimerBlock>("Re" + argument + " Timer");
                 timer.GetActionWithName("Start").Apply(timer);
                 return;
             }
@@ -261,13 +247,13 @@ namespace IngameScript
 
             stickies.Remove("Please wait...");
 
-            IMyShipConnector topConnector = GetMyBlockWithName<IMyShipConnector>("Top Connector", other);
-            IMyShipConnector bottomConnector = GetMyBlockWithName<IMyShipConnector>("Bottom Connector", other);
+            IMyShipConnector topConnector = GetOther.FirstByName<IMyShipConnector>("Top Connector");
+            IMyShipConnector bottomConnector = GetOther.FirstByName<IMyShipConnector>("Bottom Connector");
 
             if (argument == "Grab")
             {
 
-                if (anyTopLocked && !anyBottomLocked && stage == 0)
+                if (topState == SideStates.Locked && bottomState != SideStates.Locked && stage == 0)
                 {
                     StickyMessage("\nALREADY GRABBED!\n");
                     return;
@@ -279,29 +265,24 @@ namespace IngameScript
 
                 if (stage == 0)
                 {
-                    topConnector.GetActionWithName("Lock").Apply(topConnector);
+                    // Should actually be locked already otherwise how am I connected to it?
+                    Utility.RunActions(topConnector, "Lock");
                 }
                 else if (stage == 1)
                 {
-                    for (int i = 0; i < topGears.Count; i++)
-                    {
-                        topGears[i].GetActionWithName("Lock").Apply(topGears[i]);
-                    }
+
+                    Utility.RunActions(topGears, "Lock");
                 }
                 else if (stage == 2)
                 {
-                    for (int i = 0; i < bottomGears.Count; i++)
-                    {
-                        bottomGears[i].GetActionWithName("Unlock").Apply(bottomGears[i]);
-                    }
+                    Utility.RunActions(bottomGears, "Unlock");
                 }
                 else if (stage == 3)
                 {
-                    bottomConnector.GetActionWithName("Unlock").Apply(bottomConnector);
+                    Utility.RunActions(bottomConnector, "Unlock");
                 }
                 stage++;
                 stage %= 4;
-
             }
             else if (argument == "Release")
             {
@@ -312,29 +293,23 @@ namespace IngameScript
 
                 if (stage == 0)
                 {
-                    bottomConnector.GetActionWithName("Lock").Apply(bottomConnector);
+                    Utility.RunActions(bottomConnector, "Lock");
                 }
                 else if (stage == 1)
                 {
-                    for (int i = 0; i < bottomGears.Count; i++)
-                    {
-                        bottomGears[i].GetActionWithName("Lock").Apply(bottomGears[i]);
-                    }
+                    Utility.RunActions(bottomGears, "Lock");
                 }
                 else if (stage == 2)
                 {
-                    for (int i = 0; i < topGears.Count; i++)
-                    {
-                        topGears[i].GetActionWithName("Unlock").Apply(topGears[i]);
-                    }
+                    Utility.RunActions(topGears, "Unlock");
                 }
                 else if (stage == 3)
                 {
-                    IMyTimerBlock releaseTimer = GetMyBlockWithName<IMyTimerBlock>("Disconnect Start Timer");
+                    IMyTimerBlock releaseTimer = GetBlocks.FirstByName<IMyTimerBlock>("Disconnect Start Timer");
                     if (releaseTimer != null)
-                        releaseTimer.GetActionWithName("TriggerNow").Apply(releaseTimer);
+                        Utility.RunActions(releaseTimer, "TriggerNow");
                     else
-                        topConnector.GetActionWithName("OnOff_Off").Apply(topConnector);
+                        Utility.RunActions(topConnector, "OnOff_Off");
                 }
                 stage++;
                 stage %= 4;

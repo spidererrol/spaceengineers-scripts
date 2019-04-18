@@ -57,6 +57,7 @@ Global
 		Config\Config.projitems*{ef8864c9-4c27-4a6c-a6a8-8bc2e5992c2e}*SharedItemsImports = 4
 		GetBlocks\GetBlocks.projitems*{ef8864c9-4c27-4a6c-a6a8-8bc2e5992c2e}*SharedItemsImports = 4
 		MultiSurface\MultiSurface.projitems*{ef8864c9-4c27-4a6c-a6a8-8bc2e5992c2e}*SharedItemsImports = 4
+		Utility\Utility.projitems*{ef8864c9-4c27-4a6c-a6a8-8bc2e5992c2e}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
