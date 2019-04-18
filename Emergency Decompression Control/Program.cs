@@ -372,12 +372,12 @@ namespace IngameScript
                 string sTargetColor = isSealed ? sSealedColor : sLeakColor;
                 sTargetColor = sTargetColor.ToLower();
                 if (sTargetColor == "on")
-                    RunActions(light, "OnOff_On");
+                    Utility.RunActions(light, "OnOff_On");
                 else if (sTargetColor == "off")
-                    RunActions(light, "OnOff_Off");
+                    Utility.RunActions(light, "OnOff_Off");
                 else
                 {
-                    RunActions(light, "OnOff_On");
+                    Utility.RunActions(light, "OnOff_On");
                     light.Color = webColor(sTargetColor);
                 }
                 foreach (string attrib in new string[] { "BlinkLength", "BlinkIntervalSeconds", "BlinkOffset" })
@@ -426,14 +426,14 @@ namespace IngameScript
             ticker += Runtime.TimeSinceLastRun;
             if (argument == "test")
             {
-                List<IMyDoor> blks = getBlocksByName<IMyDoor>("Shutter");
+                List<IMyDoor> blks = GetBlocks.ByName<IMyDoor>("Shutter");
                 for (int i = 0; i < blks.Count; i++)
                 {
                     blks[i].CustomName = blks[i].CustomName + " " + prefix + "ControlRoom" + suffix;
                 }
             }
             Dictionary<string, int> newrooms = new Dictionary<string, int>();
-            List<IMyAirVent> vents = getBlocksByName<IMyAirVent>(prefix);
+            List<IMyAirVent> vents = GetBlocks.ByName<IMyAirVent>(prefix);
             for (int i = 0; i < vents.Count; i++)
             {
                 IMyAirVent vent = vents[i];
@@ -486,11 +486,11 @@ namespace IngameScript
                     //RunActions(getObjectsByName<IMyInteriorLight>(prefix + roomKey + suffix), "OnOff_On");
                     //RunActions(getObjectsByName<IMyInteriorLight>(prefix + roomKey + "!" + suffix), "OnOff_Off");
                 }*/
-                updateLights(getBlocksByName<IMyInteriorLight>(prefix + roomKey + suffix), isSealed, false);
-                updateLights(getBlocksByName<IMyInteriorLight>(prefix + roomKey + "!" + suffix), isSealed, true);
+                updateLights(GetBlocks.ByName<IMyInteriorLight>(prefix + roomKey + suffix), isSealed, false);
+                updateLights(GetBlocks.ByName<IMyInteriorLight>(prefix + roomKey + "!" + suffix), isSealed, true);
             }
             Emit(roomKeys.Count + " rooms found");
-            List<IMyDoor> doors = getBlocksByName<IMyDoor>(prefix);
+            List<IMyDoor> doors = GetBlocks.ByName<IMyDoor>(prefix);
             for (int i = 0; i < doors.Count; i++)
             {
                 IMyDoor door = doors[i];
@@ -565,13 +565,13 @@ namespace IngameScript
                 if (shouldClose > 0 && (door.Status == DoorStatus.Open))
                 {
                     Emit("Closing " + door.CustomName);
-                    RunActions(door, "Open_Off");
+                    Utility.RunActions(door, "Open_Off");
                     doorState[door.Position] = DoorStatus.Closing;
                 }
                 else if (doOpen && shouldClose == 0 && door.Status == DoorStatus.Closed)
                 {
                     Emit("Opening " + door.CustomName);
-                    RunActions(door, "Open_On");
+                    Utility.RunActions(door, "Open_On");
                     doorState[door.Position] = DoorStatus.Opening;
                 }
             }
