@@ -65,7 +65,7 @@ namespace IngameScript
             /// <param name="useEcho">Use <c>Echo(...)</c> to output to the Programming Block interface</param>
             /// <param name="onSelf">Use the screen(s) on this Programming Block. Will use CustomData if sectionName is set, otherwise force screen 0.</param>
             /// <returns></returns>
-            public static ConsoleSurface EasyConsole(Program prog, string consoleTag =null, string sectionName =null, bool useEcho = true, bool onSelf = true)
+            public static ConsoleSurface EasyConsole(Program prog, string consoleTag = null, string sectionName = null, bool useEcho = true, bool onSelf = true)
             {
                 IMyProgrammableBlock Me = prog.Me;
                 ConsoleSurface console;
@@ -89,7 +89,8 @@ namespace IngameScript
                     conf.Default(ShowOnScreenPrefix + Me.GetSurface(0).DisplayName, true);
                     conf.Save();
                     console.Add(Me, filter);
-                } else if (onSelf)
+                }
+                else if (onSelf)
                 {
                     console.Add(Me, 0);
                 }
