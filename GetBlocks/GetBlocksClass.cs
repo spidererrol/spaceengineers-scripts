@@ -34,14 +34,16 @@ namespace IngameScript
             public GetBlocksClass OtherGrid(IMyTerminalBlock refblock) => new GetBlocksClass(GridTerminalSystem, refblock);
 
             public delegate bool BlockFilter(IMyTerminalBlock block);
+            private BlockFilter UseMyGridFilter(bool thisgrid) => thisgrid ? myGridOnly : default(BlockFilter);
 
-            public List<IType> ByName<IType>(string match, bool thisgrid = true)
+            public List<IType> ByName<IType>(string match, bool thisgrid = true) => ByName<IType>(match, UseMyGridFilter(thisgrid));
+            public List<IType> ByName<IType>(string match, BlockFilter blockFilter)
             {
                 List<IMyTerminalBlock> hits = new List<IMyTerminalBlock>();
                 if (match == "")
                     throw new Exception("You mustn't call GetBlocks.ByName() with an empty string!");
-                if (thisgrid)
-                    GridTerminalSystem.SearchBlocksOfName(match, hits, myGridOnly);
+                if (blockFilter != null)
+                    GridTerminalSystem.SearchBlocksOfName(match, hits, b => blockFilter(b));
                 else
                     GridTerminalSystem.SearchBlocksOfName(match, hits);
                 List<IType> ret = new List<IType>();
@@ -179,9 +181,10 @@ namespace IngameScript
             /// <param name="match">String that must be found in the block name</param>
             /// <param name="thisgrid">If it should be on this grid or not.</param>
             /// <returns></returns>
-            public IType FirstByName<IType>(string match, bool thisgrid = true) where IType : IMyTerminalBlock
+            public IType FirstByName<IType>(string match, bool thisgrid = true) where IType : IMyTerminalBlock => FirstByName<IType>(match, UseMyGridFilter(thisgrid));
+            public IType FirstByName<IType>(string match, BlockFilter blockFilter) where IType : IMyTerminalBlock
             {
-                List<IType> hits = ByName<IType>(match, thisgrid);
+                List<IType> hits = ByName<IType>(match, blockFilter);
                 if (hits.Count == 0)
                     return default(IType);
                 return hits.First();
