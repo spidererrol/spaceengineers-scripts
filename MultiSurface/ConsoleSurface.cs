@@ -98,6 +98,7 @@ namespace IngameScript
             }
 
             public delegate void EchoFunc(string msg);
+            public EchoFunc GetEcho() => msg => Echo(msg);
 
             protected readonly Program program;
             protected readonly bool doEcho;
