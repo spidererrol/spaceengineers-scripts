@@ -147,9 +147,9 @@ namespace IngameScript
             MultiSurface tankH2PercentScreens = GetBlocks.MultiSurfaceByName(tanksH2Name, configSection);
             MultiSurface tankO2PercentScreens = GetBlocks.MultiSurfaceByName(tanksO2Name, configSection);
 
-            List<IMyBatteryBlock> batteries = GetBlocks.OfType<IMyBatteryBlock>();
-            List<IMyGasTank> hydrogentanks = GetBlocks.OfType<IMyGasTank>(b => b.IsSameConstructAs(Me) && b.DetailedInfo.Contains("Type: Hydrogen"));
-            List<IMyGasTank> oxygentanks = GetBlocks.OfType<IMyGasTank>(b => b.IsSameConstructAs(Me) && b.DetailedInfo.Contains("Type: Oxygen"));
+            List<IMyBatteryBlock> batteries = GetBlocks.ByType<IMyBatteryBlock>();
+            List<IMyGasTank> hydrogentanks = GetBlocks.ByType<IMyGasTank>(b => b.IsSameConstructAs(Me) && b.DetailedInfo.Contains("Type: Hydrogen"));
+            List<IMyGasTank> oxygentanks = GetBlocks.ByType<IMyGasTank>(b => b.IsSameConstructAs(Me) && b.DetailedInfo.Contains("Type: Oxygen"));
 
             ProcessBatteries(batteriesPercentScreens, batteriesRateScreens, batteries);
             TanksPercent(tankH2PercentScreens, hydrogentanks);

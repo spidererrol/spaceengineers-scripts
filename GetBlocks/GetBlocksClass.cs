@@ -63,7 +63,8 @@ namespace IngameScript
                 return ret;
             }
 
-            public List<IType> OfType<IType>(BlockFilter blockFilter) where IType : IMyTerminalBlock
+            public List<IType> ByType<IType>(bool thisgrid = true) where IType : IMyTerminalBlock => ByType<IType>(UseMyGridFilter(thisgrid));
+            public List<IType> ByType<IType>(BlockFilter blockFilter) where IType : IMyTerminalBlock
             {
                 List<IMyTerminalBlock> hits = new List<IMyTerminalBlock>();
                 if (blockFilter == null)
@@ -87,14 +88,6 @@ namespace IngameScript
                     }
                 }
                 return ret;
-            }
-
-            public List<IType> OfType<IType>(bool thisgrid = true) where IType : IMyTerminalBlock
-            {
-                if (thisgrid)
-                    return OfType<IType>(myGridOnly);
-                else
-                    return OfType<IType>(null);
             }
 
             public List<IMyBlockGroup> GroupsByName(string groupname)
@@ -210,8 +203,8 @@ namespace IngameScript
             public List<IMyGasTank> AllTanks(string gastype = null, bool thisgrid = true)
             {
                 if (gastype == null)
-                    return OfType<IMyGasTank>(thisgrid);
-                return OfType<IMyGasTank>(thisgrid).FindAll(g => g.DetailedInfo.Contains("Type: " + gastype));
+                    return ByType<IMyGasTank>(thisgrid);
+                return ByType<IMyGasTank>(thisgrid).FindAll(g => g.DetailedInfo.Contains("Type: " + gastype));
             }
 
             /// <summary>
@@ -219,18 +212,18 @@ namespace IngameScript
             /// </summary>
             /// <param name="thisgrid">Limit to the same grid as the programming block</param>
             /// <returns>list of jump drives</returns>
-            public List<IMyJumpDrive> AllJumpDrives(bool thisgrid = true) => OfType<IMyJumpDrive>(thisgrid);
-            public List<IMyThrust> AllThrusters(bool thisgrid = true) => OfType<IMyThrust>(thisgrid);
-            public List<IMyBatteryBlock> AllBatteries(bool thisgrid = true) => OfType<IMyBatteryBlock>(thisgrid);
-            public List<IMyLandingGear> AllLandingGears(bool thisgrid = true) => OfType<IMyLandingGear>(thisgrid);
-            public List<IMyGasGenerator> AllGenerators(bool thisgrid = true) => OfType<IMyGasGenerator>(thisgrid);
+            public List<IMyJumpDrive> AllJumpDrives(bool thisgrid = true) => ByType<IMyJumpDrive>(thisgrid);
+            public List<IMyThrust> AllThrusters(bool thisgrid = true) => ByType<IMyThrust>(thisgrid);
+            public List<IMyBatteryBlock> AllBatteries(bool thisgrid = true) => ByType<IMyBatteryBlock>(thisgrid);
+            public List<IMyLandingGear> AllLandingGears(bool thisgrid = true) => ByType<IMyLandingGear>(thisgrid);
+            public List<IMyGasGenerator> AllGenerators(bool thisgrid = true) => ByType<IMyGasGenerator>(thisgrid);
 
             /// <summary>
             /// Get All Oxygen Farms but excludes the Nanite facility which is secretly an Oxygen Farm (for some reason).
             /// </summary>
             /// <param name="thisgrid">Limit to current grid</param>
             /// <returns>List of Oxygen Farms</returns>
-            public List<IMyOxygenFarm> AllFarms(bool thisgrid = true) => OfType<IMyOxygenFarm>(thisgrid).FindAll(f => !f.BlockDefinition.SubtypeName.Contains("Nanite"));
+            public List<IMyOxygenFarm> AllFarms(bool thisgrid = true) => ByType<IMyOxygenFarm>(thisgrid).FindAll(f => !f.BlockDefinition.SubtypeName.Contains("Nanite"));
 
         }
     }

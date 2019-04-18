@@ -37,8 +37,8 @@ namespace IngameScript
 
         // Legacy to functions in GetBlocks:
         List<IType> getBlocksByName<IType>(string match, bool thisgrid = true) => GetBlocks.ByName<IType>(match, thisgrid);
-        List<IType> GetBlocksOfType<IType>(GetBlocksClass.BlockFilter blockFilter) where IType : IMyTerminalBlock => GetBlocks.OfType<IType>(blockFilter);
-        List<IType> GetBlocksOfType<IType>(bool thisgrid = true) where IType : IMyTerminalBlock => GetBlocks.OfType<IType>(thisgrid);
+        List<IType> GetBlocksOfType<IType>(GetBlocksClass.BlockFilter blockFilter) where IType : IMyTerminalBlock => GetBlocks.ByType<IType>(blockFilter);
+        List<IType> GetBlocksOfType<IType>(bool thisgrid = true) where IType : IMyTerminalBlock => GetBlocks.ByType<IType>(thisgrid);
         List<IMyBlockGroup> findGroups(string groupname) => GetBlocks.GroupsByName(groupname);
         List<IType> FindBlocksOfGroup<IType>(string groupname, bool thisgrid = true) => GetBlocks.OfGroups<IType>(groupname, thisgrid);
         List<IType> GetBlocksOfGroup<IType>(string groupname, bool thisgrid = true) => GetBlocks.OfGroup<IType>(groupname, thisgrid);
