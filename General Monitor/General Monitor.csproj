@@ -105,7 +105,6 @@
     <AdditionalFiles Include="thumb.png" />
     <AdditionalFiles Include="MDK\whitelist.cache" />
   </ItemGroup>
-  <Import Project="..\TLib\TLib.projitems" Label="Shared" />
   <Import Project="..\MultiSurface\MultiSurface.projitems" Label="Shared" />
   <Import Project="..\GetBlocks\GetBlocks.projitems" Label="Shared" />
   <Import Project="..\Config\Config.projitems" Label="Shared" />

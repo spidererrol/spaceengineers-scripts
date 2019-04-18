@@ -142,14 +142,14 @@ namespace IngameScript
             Echo("Version: $MDK_DATETIME$");
             #endregion
 
-            MultiSurface batteriesPercentScreens = GetMultiSurfaceByName(batteriesLCDName, configSection);
-            MultiSurface batteriesRateScreens = GetMultiSurfaceByName(batteriesRatesLCDName, configSection);
-            MultiSurface tankH2PercentScreens = GetMultiSurfaceByName(tanksH2Name, configSection);
-            MultiSurface tankO2PercentScreens = GetMultiSurfaceByName(tanksO2Name, configSection);
+            MultiSurface batteriesPercentScreens = GetBlocks.MultiSurfaceByName(batteriesLCDName, configSection);
+            MultiSurface batteriesRateScreens = GetBlocks.MultiSurfaceByName(batteriesRatesLCDName, configSection);
+            MultiSurface tankH2PercentScreens = GetBlocks.MultiSurfaceByName(tanksH2Name, configSection);
+            MultiSurface tankO2PercentScreens = GetBlocks.MultiSurfaceByName(tanksO2Name, configSection);
 
-            List<IMyBatteryBlock> batteries = GetBlocksOfType<IMyBatteryBlock>();
-            List<IMyGasTank> hydrogentanks = GetBlocksOfType<IMyGasTank>(b => b.IsSameConstructAs(Me) && b.DetailedInfo.Contains("Type: Hydrogen"));
-            List<IMyGasTank> oxygentanks = GetBlocksOfType<IMyGasTank>(b => b.IsSameConstructAs(Me) && b.DetailedInfo.Contains("Type: Oxygen"));
+            List<IMyBatteryBlock> batteries = GetBlocks.OfType<IMyBatteryBlock>();
+            List<IMyGasTank> hydrogentanks = GetBlocks.OfType<IMyGasTank>(b => b.IsSameConstructAs(Me) && b.DetailedInfo.Contains("Type: Hydrogen"));
+            List<IMyGasTank> oxygentanks = GetBlocks.OfType<IMyGasTank>(b => b.IsSameConstructAs(Me) && b.DetailedInfo.Contains("Type: Oxygen"));
 
             ProcessBatteries(batteriesPercentScreens, batteriesRateScreens, batteries);
             TanksPercent(tankH2PercentScreens, hydrogentanks);
