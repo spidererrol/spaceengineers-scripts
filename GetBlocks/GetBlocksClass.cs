@@ -23,17 +23,17 @@ namespace IngameScript
         public partial class GetBlocksClass
         {
             private readonly IMyGridTerminalSystem GridTerminalSystem;
-            private readonly IMyProgrammableBlock Me;
-            public GetBlocksClass(Program program)
+            private readonly IMyTerminalBlock Me;
+            private GetBlocksClass(IMyGridTerminalSystem gts, IMyTerminalBlock refblock)
             {
-                GridTerminalSystem = program.GridTerminalSystem;
-                Me = program.Me;
+                GridTerminalSystem = gts;
+                Me = refblock;
             }
+            public GetBlocksClass(Program program) : this(program.GridTerminalSystem, program.Me) { }
+
+            public GetBlocksClass OtherGrid(IMyTerminalBlock refblock) => new GetBlocksClass(GridTerminalSystem, refblock);
 
             public delegate bool BlockFilter(IMyTerminalBlock block);
-
-
-
 
             public List<IType> ByName<IType>(string match, bool thisgrid = true)
             {
