@@ -146,24 +146,28 @@ namespace IngameScript
             }
             else
             {
-                int OreStatB = 0;
-                int OreStatE = 0;
+                int OreStatB = NHStat.Length;
+                int OreStatE = NHStat.Length;
                 for (int j3 = 0; j3 < NHStat.Length; j3++)
                 {
-                    if (NHStat[j3].IndexOf("Ore Detected:") >= 0) { OreStatB = j3 + 2; }
-                    if (NHStat[j3].IndexOf("Valid Ore Types:") >= 0) { OreStatE = j3 - 2; }
+                    if (NHStat[j3].IndexOf("Ores:") >= 0)
+                        OreStatB = j3 + 1;
+                    if (NHStat[j3].IndexOf("Valid Ore Types:") >= 0 || NHStat[j3] == "")
+                        OreStatE = j3;
                 }
 
                 ld.WriteText("--<Mining>--\n", true);
                 for (int j2 = OreStatB; j2 < OreStatE; j2++)
                 {
+                    if (NHStat[j2].StartsWith("- "))
+                        NHStat[j2] = NHStat[j2].Remove(0, 2);
                     ld.WriteText("[" + NHStat[j2] + "]\n", true);
                 }
 
 
             }
 
-            ld.WriteText("\n", true);
+            ld.WriteText("----\n", true);
 
             if (sorter != null)
             {
