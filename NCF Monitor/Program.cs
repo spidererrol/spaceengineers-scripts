@@ -123,11 +123,12 @@ namespace IngameScript
 
                 if (NFStat[i].IndexOf("Missing components") >= 0)
                 {
-                    ld.WriteText("---------------\nRequiered: \n", true);
+                    ld.WriteText("---------------\nRequired: \n", true);
                     for (int j = i + 1; j < NFStat.Length - 1; j++)
                     {
                         ld.WriteText("[" + NFStat[j] + "]\n", true);
                     }
+                    ld.WriteLine("----");
                 }
 
                 if (NFStat[0] == "")
