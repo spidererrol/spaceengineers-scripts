@@ -305,11 +305,13 @@ namespace IngameScript
                 }
                 else if (stage == 3)
                 {
-                    IMyTimerBlock releaseTimer = GetBlocks.FirstByName<IMyTimerBlock>("Disconnect Start Timer");
-                    if (releaseTimer != null)
-                        Utility.RunActions(releaseTimer, "TriggerNow");
-                    else
-                        Utility.RunActions(topConnector, "OnOff_Off");
+                    // SE now makes connectors inactive for a short while after unlock so this is no longer needed:
+
+                    //IMyTimerBlock releaseTimer = GetBlocks.FirstByName<IMyTimerBlock>("Disconnect Start Timer");
+                    //if (releaseTimer != null)
+                    //    Utility.RunActions(releaseTimer, "TriggerNow");
+                    //else
+                    //    Utility.RunActions(topConnector, "OnOff_Off");
                 }
                 stage++;
                 stage %= 4;
