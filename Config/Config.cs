@@ -184,6 +184,7 @@ namespace IngameScript
                 public void Set(string key, float value) => parent.Set(section, key, value);
 
                 public void SetComment(string key, string comment) => parent.SetComment(section, key, comment);
+                public string GetComment(string key) => parent.GetComment(section, key);
 
                 /// <summary>
                 /// Retrieve a key, setting it to a default if it is missing.
