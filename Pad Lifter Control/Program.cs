@@ -371,6 +371,11 @@ namespace IngameScript
 
         void Main(string argument)
         {
+            DoMain(argument);
+            Render();
+        }
+        void DoMain(string argument)
+        {
             if (argument != null && argument.Length > 0)
                 cmdqueue.Enqueue(argument);
 
@@ -438,7 +443,6 @@ namespace IngameScript
             }
 
             DoIdle();
-            Render();
         }
     }
 }
