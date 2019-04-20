@@ -457,11 +457,19 @@ namespace IngameScript
             string dockConnectorName = "Dock Connector";
 
             Config.ConfigSection config = Config.Section(Me, Section);
+            bool ConfigComments = true;
+            config.Get("ConfigComments", ref ConfigComments);
+            config.Config.SuppressComments(!ConfigComments);
+            config.SetComment("ConfigComments", "Set to false to prevent re-adding these informational comments. Unfortunatly you will still have to remove them yourself.");
             config.Key("Pad Connector").Get(ref padConnectorName).Comment("Name of the connector which connects to pads");
             config.Key("Dock Connector").Get(ref dockConnectorName).Comment("Name of the connector which connects to a dock");
             config.Key("Tag").Get(ref tag).Comment("Tag for which screen(s) to display information on");
             config.Key("ConsoleTab").Get(ref debugTag).Comment("Tag for debug screen(s)");
             config.Key("UndockOffSecs").Get(ref UndockOffSecs).Comment("How long to turn off the docking connector for after undocking");
+            config.Key("AutoDock").Get(ref AutoDock).Comment("Automatically dock when in proximity of a docking connector");
+            config.Key("AutoGrab").Get(ref AutoGrab).Comment("Automatically grab a pad when in proximity");
+            config.Key("AutoUndock").Get(ref AutoUndock).Comment("Undock if you hit 'P' whilst docked");
+            config.Key("AutoRelease").Get(ref AutoRelease).Comment("Release the pad if you hit 'P' whilst not docked");
             config.Save();
 
             con = ConsoleSurface.EasyConsole(this, debugTag, Section);
