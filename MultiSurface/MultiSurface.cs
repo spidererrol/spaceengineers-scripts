@@ -225,6 +225,26 @@ namespace IngameScript
 
             public void ClearImagesFromSelection() => surfaces.ForEach(delegate (IMyTextSurface s) { s.ClearImagesFromSelection(); });
 
+            public void SetCurrentImage(string id, bool checkExistence = false)
+            {
+                if (CurrentlyShownImage == id)
+                    return;
+                ClearImagesFromSelection();
+                AddImageToSelection(id, checkExistence);
+                if (!checkExistence) // I assume that checkExistence==true could legitimatly result in no image.
+                {
+                    foreach (IMyTextSurface surface in surfaces)
+                    {
+                        if (surface.CurrentlyShownImage != id)
+                        {
+                            if (clearOnWrite)
+                                ClearText();
+                            surface.WriteText("Unable to display " + id + " on this surface\n", true);
+                        }
+                    }
+                }
+            }
+
             public MySpriteDrawFrame DrawFrame()
             {
                 // This doesn't really make sense as the surfaces could be of differing sizes.
