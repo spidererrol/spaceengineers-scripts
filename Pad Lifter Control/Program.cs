@@ -20,19 +20,106 @@ namespace IngameScript
 {
     partial class Program : MyGridProgram
     {
+        enum PadState
+        {
+            Unknown,
+            Grabbed,
+            Released
+        }
+        enum DockState
+        {
+            Unknown,
+            Docked,
+            Undocked
+        }
+        enum GrabbingStage
+        {
+            Idle,
+            TopConnector,
+            TopGears,
+            BottomGears,
+            BottomConnector,
+            Check
+        }
+        enum ReleasingStage
+        {
+            Idle,
+            BottomConnector,
+            BottomGears,
+            TopGears,
+            TopConnector,
+            PadConnector,
+            Check
+        }
+        enum UndockingStage
+        {
+            Idle,
+            UnlockConnector,
+            UnlockGears,
+            Off,
+            On,
+            Check
+        }
+        static PadState GetPadState(IMyShipConnector connector)
+        {
+            if (connector.Status == MyShipConnectorStatus.Connected)
+                return PadState.Grabbed;
+            else
+                return PadState.Released;
+        }
+        static DockState GetDockState(IMyShipConnector connector)
+        {
+            if (connector.Status == MyShipConnectorStatus.Connected)
+                return DockState.Docked;
+            else
+                return DockState.Undocked;
+        }
+
+        // This can't be configurable as it is needed to retrieve configuration:
         private const string Section = "Pad Lifter Control";
+
+        // I don't believe there is any point in making these configurable:
+        private const string ActionLock = "Lock";
+        private const string ActionUnlock = "Unlock";
+        private const string ActionOff = "OnOff_Off";
+        private const string ActionOn = "OnOff_On";
+
+        // These could probably be made configurable but I don't know if they should be:
+        private const string padTopGears = "Top";
+        private const string padTopConnector = "Top Connector";
+        private const string padBottomGears = "Bottom";
+        private const string padBottomConnnector = "Bottom Connector";
+
+        // These are configurable:
         string tag = "[PLC]";
         string debugTag = "[PLC Debug]";
+        int UndockOffSecs = 30;
 
         ConsoleSurface con;
         MultiSurface status;
-        Int32 unixTimestamp;
-        bool retrying = false;
-        int stage = 0;
-        string stagedcommand = "";
+
+        PadState padState;
+        DockState dockState;
+
+        GetBlocksClass otherBlocks;
+
+        int unixTimestamp;
+
+        StateMachine<GrabbingStage> grabbingStage = new StateMachine<GrabbingStage>();
+        StateMachine<ReleasingStage> releasingStage = new StateMachine<ReleasingStage>();
+        StateMachine<UndockingStage> undockingStage = new StateMachine<UndockingStage>();
+
+        IMyShipConnector padConnector;
+        IMyShipConnector dockConnector;
+        List<IMyLandingGear> myLandingGears;
+
+        Queue<string> cmdqueue;
 
         public Program()
         {
+            padState = PadState.Unknown;
+            dockState = DockState.Unknown;
+            cmdqueue = new Queue<string>();
             Runtime.UpdateFrequency = UpdateFrequency.Update10;
         }
 
@@ -42,24 +129,52 @@ namespace IngameScript
             if (status != null)
                 status.WriteText(s + "\n", true);
         }
-        Dictionary<string, Int32> stickies = new Dictionary<string, Int32>();
-        void StickyMessage(string msg)
+        public class StickMsg : IComparable<StickMsg>
         {
-            stickies.Remove(msg);
-            stickies.Add(msg, unixTimestamp + 10);
+            public string message;
+            public int created;
+            public int age;
+            public int timeout => created + age;
+            public StickMsg(string msg, int now, int maxage)
+            {
+                message = msg;
+                created = now;
+                age = maxage;
+            }
+
+            public int CompareTo(StickMsg other) => other.created - created;
         }
+        Dictionary<string, StickMsg> stickies = new Dictionary<string, StickMsg>();
+        void Emit(string s)
+        {
+            con.Echo(s);
+            if (status != null)
+                status.WriteLine(s);
+        }
+        void StickyMessage(string id, string msg, int age = 30)
+        {
+            stickies.Remove(id);
+            stickies.Add(id, new StickMsg(msg, unixTimestamp, age));
+        }
+        void StickyMessage(string msg, int age) => StickyMessage(msg, msg, age);
+        void StickyMessage(string msg) => StickyMessage(msg, msg);
+        void DeleteSticky(string id) => stickies.Remove(id);
         void WriteStickies()
         {
+            // I need a COPY of keys because I may be modifing the collection:
             List<string> keys = new List<string>(stickies.Keys);
-            for (int i = 0; i < keys.Count; i++)
+            keys.Sort((x, y) => stickies[x].CompareTo(stickies[y]));
+            foreach (string id in keys)
             {
-                MyEcho(keys[i]);
-                Int32 timeout = stickies[keys[i]];
-                if (timeout < unixTimestamp)
-                    stickies.Remove(keys[i]);
+                StickMsg stickMsg = stickies[id];
+                if (stickMsg.timeout < unixTimestamp)
+                    stickies.Remove(id);
+                else
+                    Emit(stickMsg.message);
             }
         }
 
+        #region sidestates
         // Ripped from Small Landing Pad Controller:
         public enum SideStates
         {
@@ -124,8 +239,283 @@ namespace IngameScript
             throw new Exception("Out Of Cheese Error");
         }
         // End
+        #endregion sidestates
+
+        IMyShipConnector GetPadConnector(string name) => otherBlocks.FirstByName<IMyShipConnector>(name);
+        List<IMyLandingGear> GetPadGears(string name) => otherBlocks.ByName<IMyLandingGear>(name);
+
+        void Render()
+        {
+            WriteStickies();
+        }
+        void DoGrab(GrabbingStage stage)
+        {
+            if (stage == GrabbingStage.Idle)
+                return;
+
+            switch (stage)
+            {
+                case GrabbingStage.TopConnector:
+                    Utility.RunActions(GetPadConnector(padTopConnector), ActionLock);
+                    break;
+                case GrabbingStage.TopGears:
+                    Utility.RunActions(GetPadGears(padTopGears), ActionLock);
+                    break;
+                case GrabbingStage.BottomGears:
+                    Utility.RunActions(GetPadGears(padBottomGears), ActionUnlock);
+                    break;
+                case GrabbingStage.BottomConnector:
+                    Utility.RunActions(GetPadConnector(padBottomConnnector), ActionUnlock);
+                    break;
+                case GrabbingStage.Check:
+                    if (GetPadConnector(padTopConnector).Status != MyShipConnectorStatus.Connected)
+                        StickyMessage("Failed to lock Top Connector!");
+                    if (GetPadConnector(padBottomConnnector).Status == MyShipConnectorStatus.Connected)
+                        StickyMessage("Failed to unlock Bottom Connector!");
+                    // I don't care if top gears are locked or not - the connector will hold secure.
+                    if (GetPadGears(padBottomGears).Any(g => g.LockMode == LandingGearMode.Locked))
+                        StickyMessage("Failed to unlock Bottom Landing Gears!");
+                    padState = PadState.Grabbed;
+                    break;
+            }
+            if (stage == GrabbingStage.Check)
+                grabbingStage.Stop();
+            else
+                grabbingStage.Next(stage + 1);
+        }
+        void DoGrab()
+        {
+            Utility.RunActions(padConnector, ActionLock);
+            grabbingStage.Start(GrabbingStage.TopConnector);
+        }
+        void DoRelease(ReleasingStage stage)
+        {
+            if (stage == ReleasingStage.Idle)
+                return;
+            switch (stage)
+            {
+                case ReleasingStage.BottomConnector:
+                    Utility.RunActions(GetPadConnector(padBottomConnnector), ActionLock);
+                    break;
+                case ReleasingStage.BottomGears:
+                    Utility.RunActions(GetPadGears(padBottomGears), ActionLock);
+                    break;
+                case ReleasingStage.TopGears:
+                    Utility.RunActions(GetPadGears(padTopGears), ActionUnlock);
+                    break;
+                case ReleasingStage.TopConnector:
+                    //Utility.RunActions(GetPadConnector(padTopConnector), ActionUnlock);
+                    Utility.RunActions(padConnector, ActionUnlock);
+                    break;
+                case ReleasingStage.Check:
+                    if (padConnector.Status == MyShipConnectorStatus.Connected)
+                        StickyMessage("Failed to unlock Pad Connector!");
+                    //if (GetPadConnector(padTopConnector).Status != MyShipConnectorStatus.Connected)
+                    //    StickyMessage("Failed to lock Top Connector!");
+                    //if (GetPadConnector(padBottomConnnector).Status == MyShipConnectorStatus.Connected)
+                    //    StickyMessage("Failed to unlock Bottom Connector!");
+                    //// I don't care if top gears are locked or not - the connector will hold secure.
+                    //if (GetPadGears(padBottomGears).Any(g => g.LockMode == LandingGearMode.Locked))
+                    //    StickyMessage("Failed to unlock Bottom Landing Gears!");
+                    padState = PadState.Released;
+                    break;
+            }
+            if (stage == ReleasingStage.Check)
+                releasingStage.Stop();
+            else
+                releasingStage.Next(stage + 1);
+        }
+        void DoRelease()
+        {
+            releasingStage.Start(ReleasingStage.BottomConnector);
+        }
+        void DoDock()
+        {
+            Utility.RunActions(dockConnector, ActionLock);
+            dockState = DockState.Docked;
+        }
+        void DoUndock(UndockingStage stage)
+        {
+            if (stage == UndockingStage.Idle)
+                return;
+
+            switch (stage)
+            {
+                case UndockingStage.UnlockConnector:
+                    Utility.RunActions(dockConnector, ActionUnlock);
+                    break;
+                case UndockingStage.UnlockGears:
+                    Utility.RunActions(myLandingGears, ActionUnlock);
+                    break;
+                case UndockingStage.Off:
+                    Utility.RunActions(dockConnector, ActionOff);
+                    undockingStage.Next(stage + 1, UndockOffSecs);
+                    return; // Note I don't want the default Next().
+                case UndockingStage.On:
+                    Utility.RunActions(dockConnector, ActionOn);
+                    break;
+                case UndockingStage.Check:
+                    dockState = DockState.Undocked;
+                    break;
+            }
+            if (stage == UndockingStage.Check)
+                undockingStage.Stop();
+            else
+                undockingStage.Next(stage + 1);
+        }
+        void DoUndock()
+        {
+            undockingStage.Start(UndockingStage.UnlockConnector);
+        }
+        void InvalidCommand(string cmd)
+        {
+            StickyMessage("Ignoring invalid command: " + cmd);
+        }
+        void DoIdle()
+        {
+            if (padConnector == null)
+            {
+                StickyMessage("No Pad Connector found!");
+                return;
+            }
+            if (dockConnector == null)
+            {
+                StickyMessage("No Dock Connector found!");
+                return;
+            }
+
+            if (padState == PadState.Unknown && padConnector != null)
+                padState = GetPadState(padConnector);
+
+            if (dockState == DockState.Unknown && dockConnector != null)
+                dockState = GetDockState(dockConnector);
+
+
+            PadState newPadState = GetPadState(padConnector);
+            DockState newDockState = GetDockState(dockConnector);
+
+            //FIXME: Can I make a decent guess about what the user wanted to do and do it for them?
+            // * If was docked, then regrab pad and undock.
+            // * If was undocked and dock is near, regrab pad and dock.
+            // * If was undocked and not near dock:
+            //   * If was grabbed, release.
+            //   * If was realeased, grab
+            if (padState == PadState.Grabbed && padConnector.Status != MyShipConnectorStatus.Connected)
+            {
+                StickyMessage("autofix", "Re-grabbing pad");
+                DoGrab();
+            }
+            else if (padState == PadState.Released && padConnector.Status == MyShipConnectorStatus.Connected)
+            {
+                StickyMessage("autofix", "Re-releasing pad");
+                DoRelease();
+            }
+
+            if (dockState == DockState.Docked && dockConnector.Status != MyShipConnectorStatus.Connected)
+            {
+                StickyMessage("autofix", "Re-docking");
+                DoDock();
+            }
+            else if (dockState == DockState.Undocked && dockConnector.Status == MyShipConnectorStatus.Connected)
+            {
+                StickyMessage("autofix", "Re-undocking");
+                DoUndock();
+            }
+        }
+
+        void Debug(string msg) => StickyMessage(msg);
 
         void Main(string argument)
+        {
+            if (argument != null && argument.Length > 0)
+                cmdqueue.Enqueue(argument);
+
+            unixTimestamp = (int)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+
+            string padConnectorName = "Pad Connector";
+            string dockConnectorName = "Dock Connector";
+
+            Config.ConfigSection config = Config.Section(Me, Section);
+            config.Key("Pad Connector").Get(ref padConnectorName).Comment("Name of the connector which connects to pads");
+            config.Key("Dock Connector").Get(ref dockConnectorName).Comment("Name of the connector which connects to a dock");
+            config.Key("Tag").Get(ref tag).Comment("Tag for which screen(s) to display information on");
+            config.Key("ConsoleTab").Get(ref debugTag).Comment("Tag for debug screen(s)");
+            config.Key("UndockOffSecs").Get(ref UndockOffSecs).Comment("How long to turn off the docking connector for after undocking");
+            config.Save();
+
+            con = ConsoleSurface.EasyConsole(this, debugTag, Section);
+            status = GetBlocks.MultiSurfaceByName(tag, Section);
+            status.ContentType = VRage.Game.GUI.TextPanel.ContentType.TEXT_AND_IMAGE;
+            status.ClearText();
+
+            padConnector = GetBlocks.FirstByName<IMyShipConnector>(padConnectorName);
+            dockConnector = GetBlocks.FirstByName<IMyShipConnector>(dockConnectorName);
+            myLandingGears = GetBlocks.ByType<IMyLandingGear>();
+
+            if (padConnector.OtherConnector != null)
+                otherBlocks = GetBlocks.OtherGrid(padConnector.OtherConnector);
+            else
+                otherBlocks = null;
+
+            if (grabbingStage.Active)
+            {
+                Debug("Continuing grabbing");
+                DoGrab(grabbingStage.Step());
+                return;
+            }
+            if (releasingStage.Active)
+            {
+                Debug("Continuing releasing");
+                DoRelease(releasingStage.Step());
+                return;
+            }
+            if (undockingStage.Active)
+            {
+                Debug("Continuing undocking");
+                DoUndock(undockingStage.Step());
+                return;
+            }
+
+            if (cmdqueue.Count > 0)
+            {
+                Debug("Processing commands!");
+                string cmd = cmdqueue.Dequeue();
+                Debug("Command: " + cmd);
+                switch (cmd)
+                {
+                    case "Grab":
+                        DoGrab();
+                        break;
+                    case "Release":
+                        DoRelease();
+                        break;
+                    case "Dock":
+                        DoDock();
+                        break;
+                    case "Undock":
+                        DoUndock();
+                        break;
+                    default:
+                        InvalidCommand(cmd);
+                        break;
+                }
+                return;
+            }
+
+            DoIdle();
+            Render();
+        }
+
+        /*
+        //--------------------
+
+        //bool retrying = false;
+        //int stage = 0;
+        //string stagedcommand = "";
+
+
+
+        void OldMain(string argument)
         {
             if (argument == null)
                 argument = "";
@@ -321,6 +711,7 @@ namespace IngameScript
             return;
         }
 
+//*/
 
     }
 }
