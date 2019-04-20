@@ -121,6 +121,7 @@ namespace IngameScript
                     );
 
             protected List<IMyTextSurface> surfaces;
+            private bool clearOnWrite = false;
 
             /// <summary>
             /// Conveniance operator to slightly ease converting from LCDs to a MultiSurface.
@@ -269,6 +270,8 @@ namespace IngameScript
 
             public bool WriteText(StringBuilder value, bool append = false)
             {
+                if (clearOnWrite)
+                    ClearText();
                 bool allOk = true;
                 surfaces.ForEach(delegate (IMyTextSurface s)
                 {
@@ -280,7 +283,13 @@ namespace IngameScript
 
             public bool WriteLine(string value, bool append = true) => WriteText(value + "\n", append);
 
-            public bool ClearText() => WriteText("", false);
+            public void ClearOnWrite() => clearOnWrite = true;
+
+            public bool ClearText()
+            {
+                clearOnWrite = false;
+                return WriteText("", false);
+            }
 
             public List<string> GetFonts()
             {
