@@ -134,7 +134,7 @@ namespace IngameScript
         {
             // I need a COPY of keys because I may be modifing the collection:
             List<string> keys = new List<string>(stickies.Keys);
-            keys.Sort((x, y) => stickies[x].CompareTo(stickies[y]));
+            keys.Sort((x, y) => stickies[y].CompareTo(stickies[x]));
             foreach (string id in keys)
             {
                 StickMsg stickMsg = stickies[id];
