@@ -67,6 +67,10 @@ namespace IngameScript
         string tag = "[PLC]";
         string debugTag = "[PLC Debug]";
         int UndockOffSecs = 30;
+        bool AutoDock = false;
+        bool AutoGrab = false;
+        bool AutoUndock = true;
+        bool AutoRelease = true;
 
         ConsoleSurface con;
         MultiSurface status;
@@ -373,36 +377,69 @@ namespace IngameScript
             PadState newPadState = GetPadState(padConnector);
             DockState newDockState = GetDockState(dockConnector);
 
-            //FIXME: Can I make a decent guess about what the user wanted to do and do it for them?
-            // * If was docked, then regrab pad and undock.
-            // * If was undocked and dock is near, regrab pad and dock.
-            // * If was undocked and not near dock:
-            //   * If was grabbed, release.
-            //   * If was realeased, grab
-            if (padState == PadState.Grabbed && padConnector.Status != MyShipConnectorStatus.Connected)
-            {
-                StickyMessage("autofix", "Re-grabbing pad");
-                DoGrab();
-            }
-            else if (padState == PadState.Released && padConnector.Status == MyShipConnectorStatus.Connected)
-            {
-                StickyMessage("autofix", "Re-releasing pad");
-                DoRelease();
-            }
 
-            if (dockState == DockState.Docked && dockConnector.Status != MyShipConnectorStatus.Connected)
+            if (dockState == DockState.Docked && newDockState == DockState.Undocked)
             {
-                StickyMessage("autofix", "Re-docking");
-                DoDock();
+                if (AutoUndock)
+                {
+                    StickyMessage("Auto-undock");
+                    if (padState == PadState.Grabbed && newPadState == PadState.Released)
+                        cmdqueue.Enqueue("Grab");
+                    else if (padState == PadState.Released && newPadState == PadState.Grabbed)
+                        cmdqueue.Enqueue("Release");
+                    cmdqueue.Enqueue("Undock");
+                }
+                else
+                {
+                    StickyMessage("autofix", "Re-docking");
+                    cmdqueue.Enqueue("Dock");
+                }
             }
-            else if (dockState == DockState.Undocked && dockConnector.Status == MyShipConnectorStatus.Connected)
+            else if (dockState == DockState.Undocked && dockConnector.Status == MyShipConnectorStatus.Connectable)
             {
-                StickyMessage("autofix", "Re-undocking");
-                DoUndock();
+                if (AutoDock)
+                {
+                    StickyMessage("Auto-dock");
+                    if (padState == PadState.Grabbed && newPadState == PadState.Released)
+                        cmdqueue.Enqueue("Grab");
+                    else if (padState == PadState.Released && newPadState == PadState.Grabbed)
+                        cmdqueue.Enqueue("Release");
+                    cmdqueue.Enqueue("Dock");
+                }
+                else
+                {
+                    StickyMessage("autofix", "Re-undocking");
+                    cmdqueue.Enqueue("Undock");
+                }
+            }
+            else if (padState == PadState.Grabbed && newPadState == PadState.Released)
+            {
+                if (AutoRelease)
+                {
+                    Utility.RunActions(padConnector, ActionLock);
+                    cmdqueue.Enqueue("Release");
+                }
+                else
+                {
+                    StickyMessage("autofix", "Re-grabbing pad");
+                    cmdqueue.Enqueue("Grab");
+                }
+            }
+            else if (padState == PadState.Released && padConnector.Status == MyShipConnectorStatus.Connectable)
+            {
+                if (AutoGrab)
+                {
+                    cmdqueue.Enqueue("Grab");
+                }
+                else
+                {
+                    StickyMessage("autofix", "Re-releasing pad");
+                    cmdqueue.Enqueue("Release");
+                }
             }
         }
 
-        void Debug(string msg) => StickyMessage(msg);
+        //void Debug(string msg) => StickyMessage(msg);
 
         void Main(string argument)
         {
