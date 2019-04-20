@@ -9,6 +9,7 @@
     <Import_RootNamespace>GetBlocks</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)GetBlocks-MultiSurface.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GetBlocksClass.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ZGetBlocksAccessor.cs" />
   </ItemGroup>
