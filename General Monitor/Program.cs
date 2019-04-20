@@ -38,42 +38,18 @@ namespace IngameScript
             Runtime.UpdateFrequency = UpdateFrequency.Update10;
         }
 
-        int GeneralPercent(List<IMyTextSurface> screens, float pct, int lastIndex = -1)
+        int GeneralPercent(string what, MultiSurface screens, float pct, int lastIndex = -1)
         {
-            if (screens.Any())
-            {
-                int index = (int)pct;
+            int index = (int)pct;
 
-                if (index > 100 || index < 0)
-                    return -1; //error          
-                if (index == lastIndex)
-                    return index;
-
-                string imagename = imagePrefix + index.ToString("000");
-                foreach (IMyTextSurface lcd in screens)
-                {
-                    lcd.ContentType = ContentType.TEXT_AND_IMAGE;
-                    if (lcd.CurrentlyShownImage == null)
-                    {
-                        Echo(lcd.DisplayName + ":---=> " + imagename);
-                        lcd.AddImageToSelection(imagename);
-                    }
-                    if (imagename != lcd.CurrentlyShownImage)
-                    {
-                        Echo(lcd.DisplayName + ":" + lcd.CurrentlyShownImage + " => " + imagename);
-                        //lcd.RemoveImageFromSelection(lcd.CurrentlyShownImage, true);
-                        lcd.ClearImagesFromSelection();
-                        lcd.AddImageToSelection(imagename);
-                    }
-                    if (imagename != lcd.CurrentlyShownImage)
-                    {
-                        // If there are many images, this may appear for a short while whilst they are removed...
-                        lcd.WriteText("Unable to change images on this screen!");
-                    }
-                }
+            if (index > 100 || index < 0)
+                return -1; //error          
+            if (index == lastIndex)
                 return index;
-            }
-            return lastIndex;
+
+            string imagename = imagePrefix + index.ToString("000");
+            screens.SetCurrentImage(imagename);
+            return index;
         }
 
         void BatteriesRate(List<IMyTextSurface> screens, float diff)
@@ -97,7 +73,7 @@ namespace IngameScript
             }
         }
 
-        void TanksPercent(List<IMyTextSurface> screens, List<IMyGasTank> tanks)
+        void TanksPercent(string what, MultiSurface screens, List<IMyGasTank> tanks)
         {
             double fill = 0.0f;
             int count = 0;
@@ -108,7 +84,7 @@ namespace IngameScript
             }
             fill /= count;
 
-            GeneralPercent(screens, (float)(100.0f * fill));
+            GeneralPercent(what, screens, (float)(100.0f * fill));
         }
 
         void ProcessBatteries(MultiSurface batteriesPercentScreens, MultiSurface batteriesRateScreens, List<IMyBatteryBlock> batteries)
@@ -126,7 +102,7 @@ namespace IngameScript
                 curOut += batt.CurrentOutput;
             }
 
-            GeneralPercent(batteriesPercentScreens, 100.0f * curPower / maxPower);
+            GeneralPercent("Batteries", batteriesPercentScreens, 100.0f * curPower / maxPower);
             BatteriesRate(batteriesRateScreens, curIn - curOut);
         }
 
@@ -154,14 +130,18 @@ namespace IngameScript
             MultiSurface batteriesRateScreens = GetBlocks.MultiSurfaceByName(batteriesRatesLCDName, configSection);
             MultiSurface tankH2PercentScreens = GetBlocks.MultiSurfaceByName(tanksH2Name, configSection);
             MultiSurface tankO2PercentScreens = GetBlocks.MultiSurfaceByName(tanksO2Name, configSection);
+            batteriesPercentScreens.ClearOnWrite();
+            batteriesRateScreens.ClearOnWrite();
+            tankH2PercentScreens.ClearOnWrite();
+            tankO2PercentScreens.ClearOnWrite();
 
             List<IMyBatteryBlock> batteries = GetBlocks.ByType<IMyBatteryBlock>();
             List<IMyGasTank> hydrogentanks = GetBlocks.ByType<IMyGasTank>(b => b.IsSameConstructAs(Me) && b.DetailedInfo.Contains("Type: Hydrogen"));
             List<IMyGasTank> oxygentanks = GetBlocks.ByType<IMyGasTank>(b => b.IsSameConstructAs(Me) && b.DetailedInfo.Contains("Type: Oxygen"));
 
             ProcessBatteries(batteriesPercentScreens, batteriesRateScreens, batteries);
-            TanksPercent(tankH2PercentScreens, hydrogentanks);
-            TanksPercent(tankO2PercentScreens, oxygentanks);
+            TanksPercent("H2 Tanks", tankH2PercentScreens, hydrogentanks);
+            TanksPercent("O2 Tanks", tankO2PercentScreens, oxygentanks);
         }
     }
 }
