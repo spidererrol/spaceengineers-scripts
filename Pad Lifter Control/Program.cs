@@ -32,34 +32,7 @@ namespace IngameScript
             Docked,
             Undocked
         }
-        enum GrabbingStage
-        {
-            Idle,
-            TopConnector,
-            TopGears,
-            BottomGears,
-            BottomConnector,
-            Check
-        }
-        enum ReleasingStage
-        {
-            Idle,
-            BottomConnector,
-            BottomGears,
-            TopGears,
-            TopConnector,
-            PadConnector,
-            Check
-        }
-        enum UndockingStage
-        {
-            Idle,
-            UnlockConnector,
-            UnlockGears,
-            Off,
-            On,
-            Check
-        }
+
         static PadState GetPadState(IMyShipConnector connector)
         {
             if (connector.Status == MyShipConnectorStatus.Connected)
@@ -105,9 +78,7 @@ namespace IngameScript
 
         int unixTimestamp;
 
-        StateMachine<GrabbingStage> grabbingStage = new StateMachine<GrabbingStage>();
-        StateMachine<ReleasingStage> releasingStage = new StateMachine<ReleasingStage>();
-        StateMachine<UndockingStage> undockingStage = new StateMachine<UndockingStage>();
+        IEnumerator<bool> runQueue;
 
         IMyShipConnector padConnector;
         IMyShipConnector dockConnector;
@@ -248,124 +219,97 @@ namespace IngameScript
         {
             WriteStickies();
         }
-        void DoGrab(GrabbingStage stage)
+        IEnumerator<bool> ContinueGrab()
         {
-            if (stage == GrabbingStage.Idle)
-                return;
+            Utility.RunActions(padConnector, ActionLock);
+            yield return true;
 
-            switch (stage)
-            {
-                case GrabbingStage.TopConnector:
-                    Utility.RunActions(GetPadConnector(padTopConnector), ActionLock);
-                    break;
-                case GrabbingStage.TopGears:
-                    Utility.RunActions(GetPadGears(padTopGears), ActionLock);
-                    break;
-                case GrabbingStage.BottomGears:
-                    Utility.RunActions(GetPadGears(padBottomGears), ActionUnlock);
-                    break;
-                case GrabbingStage.BottomConnector:
-                    Utility.RunActions(GetPadConnector(padBottomConnnector), ActionUnlock);
-                    break;
-                case GrabbingStage.Check:
-                    if (GetPadConnector(padTopConnector).Status != MyShipConnectorStatus.Connected)
-                        StickyMessage("Failed to lock Top Connector!");
-                    if (GetPadConnector(padBottomConnnector).Status == MyShipConnectorStatus.Connected)
-                        StickyMessage("Failed to unlock Bottom Connector!");
-                    // I don't care if top gears are locked or not - the connector will hold secure.
-                    if (GetPadGears(padBottomGears).Any(g => g.LockMode == LandingGearMode.Locked))
-                        StickyMessage("Failed to unlock Bottom Landing Gears!");
-                    padState = PadState.Grabbed;
-                    break;
-            }
-            if (stage == GrabbingStage.Check)
-                grabbingStage.Stop();
-            else
-                grabbingStage.Next(stage + 1);
+            Utility.RunActions(GetPadConnector(padTopConnector), ActionLock);
+            yield return true;
+
+            Utility.RunActions(GetPadGears(padTopGears), ActionLock);
+            yield return true;
+
+            Utility.RunActions(GetPadGears(padBottomGears), ActionUnlock);
+            yield return true;
+
+            Utility.RunActions(GetPadConnector(padBottomConnnector), ActionUnlock);
+            yield return true;
+
+            if (GetPadConnector(padTopConnector).Status != MyShipConnectorStatus.Connected)
+                StickyMessage("Failed to lock Top Connector!");
+            if (GetPadConnector(padBottomConnnector).Status == MyShipConnectorStatus.Connected)
+                StickyMessage("Failed to unlock Bottom Connector!");
+            // I don't care if top gears are locked or not - the connector will hold secure.
+            if (GetPadGears(padBottomGears).Any(g => g.LockMode == LandingGearMode.Locked))
+                StickyMessage("Failed to unlock Bottom Landing Gears!");
+            padState = PadState.Grabbed;
+            yield return false;
         }
         void DoGrab()
         {
-            Utility.RunActions(padConnector, ActionLock);
-            grabbingStage.Start(GrabbingStage.TopConnector);
+            runQueue = ContinueGrab();
         }
-        void DoRelease(ReleasingStage stage)
+        IEnumerator<bool> ContinueRelease()
         {
-            if (stage == ReleasingStage.Idle)
-                return;
-            switch (stage)
-            {
-                case ReleasingStage.BottomConnector:
-                    Utility.RunActions(GetPadConnector(padBottomConnnector), ActionLock);
-                    break;
-                case ReleasingStage.BottomGears:
-                    Utility.RunActions(GetPadGears(padBottomGears), ActionLock);
-                    break;
-                case ReleasingStage.TopGears:
-                    Utility.RunActions(GetPadGears(padTopGears), ActionUnlock);
-                    break;
-                case ReleasingStage.TopConnector:
-                    //Utility.RunActions(GetPadConnector(padTopConnector), ActionUnlock);
-                    Utility.RunActions(padConnector, ActionUnlock);
-                    break;
-                case ReleasingStage.Check:
-                    if (padConnector.Status == MyShipConnectorStatus.Connected)
-                        StickyMessage("Failed to unlock Pad Connector!");
-                    //if (GetPadConnector(padTopConnector).Status != MyShipConnectorStatus.Connected)
-                    //    StickyMessage("Failed to lock Top Connector!");
-                    //if (GetPadConnector(padBottomConnnector).Status == MyShipConnectorStatus.Connected)
-                    //    StickyMessage("Failed to unlock Bottom Connector!");
-                    //// I don't care if top gears are locked or not - the connector will hold secure.
-                    //if (GetPadGears(padBottomGears).Any(g => g.LockMode == LandingGearMode.Locked))
-                    //    StickyMessage("Failed to unlock Bottom Landing Gears!");
-                    padState = PadState.Released;
-                    break;
-            }
-            if (stage == ReleasingStage.Check)
-                releasingStage.Stop();
-            else
-                releasingStage.Next(stage + 1);
+            Utility.RunActions(GetPadConnector(padBottomConnnector), ActionLock);
+            yield return true;
+
+            Utility.RunActions(GetPadGears(padBottomGears), ActionLock);
+            yield return true;
+
+            Utility.RunActions(GetPadGears(padTopGears), ActionUnlock);
+            yield return true;
+
+            //Utility.RunActions(GetPadConnector(padTopConnector), ActionUnlock);
+            Utility.RunActions(padConnector, ActionUnlock);
+            yield return true;
+
+            if (padConnector.Status == MyShipConnectorStatus.Connected)
+                StickyMessage("Failed to unlock Pad Connector!");
+            //if (GetPadConnector(padTopConnector).Status != MyShipConnectorStatus.Connected)
+            //    StickyMessage("Failed to lock Top Connector!");
+            //if (GetPadConnector(padBottomConnnector).Status == MyShipConnectorStatus.Connected)
+            //    StickyMessage("Failed to unlock Bottom Connector!");
+            //// I don't care if top gears are locked or not - the connector will hold secure.
+            //if (GetPadGears(padBottomGears).Any(g => g.LockMode == LandingGearMode.Locked))
+            //    StickyMessage("Failed to unlock Bottom Landing Gears!");
+            padState = PadState.Released;
+            yield return false;
         }
         void DoRelease()
         {
-            releasingStage.Start(ReleasingStage.BottomConnector);
+            runQueue = ContinueRelease();
         }
         void DoDock()
         {
             Utility.RunActions(dockConnector, ActionLock);
             dockState = DockState.Docked;
         }
-        void DoUndock(UndockingStage stage)
+        IEnumerator<bool> ContinueUndock()
         {
-            if (stage == UndockingStage.Idle)
-                return;
+            Utility.RunActions(dockConnector, ActionUnlock);
+            yield return true;
 
-            switch (stage)
-            {
-                case UndockingStage.UnlockConnector:
-                    Utility.RunActions(dockConnector, ActionUnlock);
-                    break;
-                case UndockingStage.UnlockGears:
-                    Utility.RunActions(myLandingGears, ActionUnlock);
-                    break;
-                case UndockingStage.Off:
-                    Utility.RunActions(dockConnector, ActionOff);
-                    undockingStage.Next(stage + 1, UndockOffSecs);
-                    return; // Note I don't want the default Next().
-                case UndockingStage.On:
-                    Utility.RunActions(dockConnector, ActionOn);
-                    break;
-                case UndockingStage.Check:
-                    dockState = DockState.Undocked;
-                    break;
-            }
-            if (stage == UndockingStage.Check)
-                undockingStage.Stop();
-            else
-                undockingStage.Next(stage + 1);
+            Utility.RunActions(myLandingGears, ActionUnlock);
+            yield return true;
+
+            Utility.RunActions(dockConnector, ActionOff);
+            DateTime delayUntil = DateTime.Now + TimeSpan.FromSeconds(UndockOffSecs);
+            yield return true;
+
+            while (delayUntil > DateTime.Now)
+                yield return true;
+
+            Utility.RunActions(dockConnector, ActionOn);
+            yield return true;
+
+            dockState = DockState.Undocked;
+            yield return false;
         }
         void DoUndock()
         {
-            undockingStage.Start(UndockingStage.UnlockConnector);
+            runQueue = ContinueUndock();
         }
         void InvalidCommand(string cmd)
         {
@@ -457,22 +401,13 @@ namespace IngameScript
             else
                 otherBlocks = null;
 
-            if (grabbingStage.Active)
+            if (runQueue != null)
             {
-                Debug("Continuing grabbing");
-                DoGrab(grabbingStage.Step());
-                return;
-            }
-            if (releasingStage.Active)
-            {
-                Debug("Continuing releasing");
-                DoRelease(releasingStage.Step());
-                return;
-            }
-            if (undockingStage.Active)
-            {
-                Debug("Continuing undocking");
-                DoUndock(undockingStage.Step());
+                if (!runQueue.MoveNext() || !runQueue.Current)
+                {
+                    runQueue.Dispose();
+                    runQueue = null;
+                }
                 return;
             }
 
