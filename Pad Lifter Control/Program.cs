@@ -218,6 +218,8 @@ namespace IngameScript
         void Render()
         {
             WriteStickies();
+            MyEcho("Pad: " + padState.ToString());
+            MyEcho("Dock: " + dockState.ToString());
         }
         IEnumerator<bool> ContinueGrab()
         {
