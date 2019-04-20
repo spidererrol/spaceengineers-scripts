@@ -49,6 +49,7 @@ namespace IngameScript
 
             string imagename = imagePrefix + index.ToString("000");
             screens.SetCurrentImage(imagename);
+            console.Echo(what + ": " + pct.ToString("N0") + "%");
             return index;
         }
 
