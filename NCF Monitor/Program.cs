@@ -43,10 +43,8 @@ namespace IngameScript
         public void Main(string realargument)
         {
             Config.ConfigSection config = Config.Section(Me, SectionName);
-            config.Get("Tag", ref NaniteTag);
-            config.SetComment("Tag", "How non-debug blocks are tagged");
-            config.Get("Console", ref ConsoleTag);
-            config.SetComment("Console", "How debug lcd blocks are tagged");
+            config.Key("Tag").Get(ref NaniteTag).Comment("How non-debug blocks are tagged");
+            config.Key("Console").Get(ref ConsoleTag).Comment("How debug lcd blocks are tagged");
             config.Save();
 
             ConsoleSurface con = ConsoleSurface.EasyConsole(this, ConsoleTag, SectionName);
