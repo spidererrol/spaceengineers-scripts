@@ -322,10 +322,11 @@ namespace IngameScript
                 light.Color = bottomColor;
             }
 
-            Dictionary<string, SideStates> statesMap = new Dictionary<string, SideStates>();
-
-            statesMap.Add("Top", topState);
-            statesMap.Add("Bottom", bottomState);
+            Dictionary<string, SideStates> statesMap = new Dictionary<string, SideStates>
+            {
+                { "Top", topState },
+                { "Bottom", bottomState }
+            };
 
             return statesMap;
         }
