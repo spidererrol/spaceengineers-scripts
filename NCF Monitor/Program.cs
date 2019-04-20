@@ -53,12 +53,15 @@ namespace IngameScript
             IMyTerminalBlock nf = GetNaniteControl();
             IMyTerminalBlock nh = GetNaniteOre();
 
-            Echo("Find NF");
+            #region mdk macros
+            Echo("NCF Monitor");
+            Echo("Version $MDK_DATETIME$");
+            #endregion
+
             string[] NFStat = { "" };
             if (nf != null)
             {
                 NFStat = nf.CustomInfo.Split('\n');
-                Echo("Got NF");
             }
 
             string[] NHStat = { "" };
@@ -68,14 +71,12 @@ namespace IngameScript
             }
 
             MultiSurface ld = GetBlocks.MultiSurfaceByName(NaniteTag, SectionName);
-            con.Echo("Got LCD");
             ld.ContentType = VRage.Game.GUI.TextPanel.ContentType.TEXT_AND_IMAGE;
             ld.WriteText("", false);
             IMyConveyorSorter sorter = GetBlocks.FirstByName<IMyConveyorSorter>(NaniteTag);
 
             ld.WriteText("-= Nanite Factory =- \n", false);
 
-            Echo("Parsing NF");
             bool isActive = true;
             for (int i = 0; i < NFStat.Length; i++)
             {
@@ -85,6 +86,7 @@ namespace IngameScript
                     isActive = true;
                     string nfStatus = NFStat[i].Split(':')[1];
                     ld.WriteText("Status: " + nfStatus + "\n", true);
+                    Echo("NF Status: " + nfStatus);
                     switch (nfStatus)
                     {
                         case "Enabled":
@@ -239,8 +241,6 @@ namespace IngameScript
             }
 
             Echo("Done");
-            //*/
         }
-
     }
 }
