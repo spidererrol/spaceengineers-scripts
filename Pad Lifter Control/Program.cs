@@ -283,10 +283,22 @@ namespace IngameScript
         {
             runQueue = ContinueRelease();
         }
-        void DoDock()
+        IEnumerator<bool> ContinueDock()
         {
             Utility.RunActions(dockConnector, ActionLock);
+            yield return true;
+
+            Utility.RunActions(myLandingGears, ActionLock);
+            yield return true;
+
             dockState = DockState.Docked;
+            StickyMessage("Progress", "Docing Complete");
+            yield return false;
+        }
+        void DoDock()
+        {
+            StickyMessage("Progress", "Docking...");
+            runQueue = ContinueDock();
         }
         IEnumerator<bool> ContinueUndock()
         {
