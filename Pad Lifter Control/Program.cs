@@ -246,10 +246,12 @@ namespace IngameScript
             if (GetPadGears(padBottomGears).Any(g => g.LockMode == LandingGearMode.Locked))
                 StickyMessage("Failed to unlock Bottom Landing Gears!");
             padState = PadState.Grabbed;
+            StickyMessage("Progress", "Grab Complete");
             yield return false;
         }
         void DoGrab()
         {
+            StickyMessage("Progress", "Grabbing Pad...");
             runQueue = ContinueGrab();
         }
         IEnumerator<bool> ContinueRelease()
@@ -289,10 +291,13 @@ namespace IngameScript
             //if (GetPadGears(padBottomGears).Any(g => g.LockMode == LandingGearMode.Locked))
             //    StickyMessage("Failed to unlock Bottom Landing Gears!");
             padState = PadState.Released;
+            StickyMessage("Progress", "Release Complete");
+
             yield return false;
         }
         void DoRelease()
         {
+            StickyMessage("Progress", "Releasing Pad...");
             runQueue = ContinueRelease();
         }
         IEnumerator<bool> ContinueDock()
@@ -322,6 +327,8 @@ namespace IngameScript
 
             Utility.RunActions(dockConnector, ActionOff);
             DateTime delayUntil = DateTime.Now + TimeSpan.FromSeconds(UndockOffSecs);
+            StickyMessage("Progress", "READY - Move away from connector!");
+            dockState = DockState.Undocked;
             yield return true;
 
             while (delayUntil > DateTime.Now)
@@ -331,10 +338,12 @@ namespace IngameScript
             yield return true;
 
             dockState = DockState.Undocked;
+            StickyMessage("Progress", "Undocking Complete");
             yield return false;
         }
         void DoUndock()
         {
+            StickyMessage("Progress", "Undocking...");
             runQueue = ContinueUndock();
         }
         void InvalidCommand(string cmd)
@@ -444,9 +453,9 @@ namespace IngameScript
 
             if (cmdqueue.Count > 0)
             {
-                Debug("Processing commands!");
+                //Debug("Command", "Processing commands!");
                 string cmd = cmdqueue.Dequeue();
-                Debug("Command: " + cmd);
+                StickyMessage("Command", "Command: " + cmd);
                 switch (cmd)
                 {
                     case "Grab":
@@ -467,6 +476,7 @@ namespace IngameScript
                 }
                 return;
             }
+            stickies.Remove("Command");
 
             DoIdle();
         }
