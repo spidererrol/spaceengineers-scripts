@@ -267,6 +267,18 @@ namespace IngameScript
             Utility.RunActions(padConnector, ActionUnlock);
             yield return true;
 
+            Utility.RunActions(padConnector, ActionOff);
+            DateTime delayUntil = DateTime.Now + TimeSpan.FromSeconds(UndockOffSecs);
+            StickyMessage("Progress", "READY - Move away from connector!");
+            padState = PadState.Released;
+            yield return true;
+
+            while (delayUntil > DateTime.Now)
+                yield return true;
+
+            Utility.RunActions(padConnector, ActionOn);
+            yield return true;
+
             if (padConnector.Status == MyShipConnectorStatus.Connected)
                 StickyMessage("Failed to unlock Pad Connector!");
             //if (GetPadConnector(padTopConnector).Status != MyShipConnectorStatus.Connected)
