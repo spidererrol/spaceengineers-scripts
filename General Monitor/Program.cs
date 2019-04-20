@@ -31,6 +31,8 @@ namespace IngameScript
         // The Image set to use.           
         string imagePrefix = "Percent ";
 
+        ConsoleSurface console;
+
         public Program()
         {
             Runtime.UpdateFrequency = UpdateFrequency.Update10;
@@ -137,6 +139,12 @@ namespace IngameScript
             config.Get("Oxygen LCD", ref tanksO2Name);
             config.Get("Image Prefix", ref imagePrefix);
             config.Save();
+
+            console = ConsoleSurface.EasyConsole(this, "General Monitor", configSection);
+            console.ClearScreen();
+            ConsoleSurface.EchoFunc Echo = console.GetEcho();
+
+            Echo("General Monitor");
 
             #region mdk macros
             Echo("Version: $MDK_DATETIME$");
