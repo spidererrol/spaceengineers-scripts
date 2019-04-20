@@ -259,6 +259,19 @@ namespace IngameScript
 
             private readonly IMyTerminalBlock termBlock;
             private string original;
+            private bool suppressComments;
+
+            /// <summary>
+            /// Unfortunatly this cannot actually remove comments (as that doesn't appear to be possible).
+            /// </summary>
+            /// <param name="set">set Suppress mode or not</param>
+            /// <returns>Previous suppress mode</returns>
+            public bool SuppressComments(bool set = true)
+            {
+                bool ret = suppressComments;
+                suppressComments = set;
+                return ret;
+            }
 
             /// <summary>
             /// Create a <see cref="ConfigSection"/> directly from a config source.
@@ -285,7 +298,7 @@ namespace IngameScript
             /// Parse configuration from a string.
             /// </summary>
             /// <param name="defaultini">string containing config.</param>
-            public Config(string defaultini) : base()
+            public Config(string defaultini) : this()
             {
                 Load(defaultini);
             }
@@ -296,7 +309,7 @@ namespace IngameScript
             /// The <see cref="MyIni"/> will be copied and will not recieve updates.
             /// </remarks>
             /// <param name="defaultini"><see cref="MyIni"/> to base config on.</param>
-            public Config(MyIni defaultini) : base()
+            public Config(MyIni defaultini) : this()
             {
                 Load(defaultini);
             }
@@ -306,7 +319,10 @@ namespace IngameScript
             /// <remarks>
             /// You can then use <see cref="Load(IMyTerminalBlock)"/> to load a config if desired.
             /// </remarks>
-            public Config() : base() { }
+            public Config() : base()
+            {
+                suppressComments = false;
+            }
 
             /// <summary>
             /// Load configuration from a block. If there is no configuration on the block then
@@ -390,6 +406,20 @@ namespace IngameScript
                 return new ConfigSection(this, section);
             }
 
+            public new void SetComment(string section, string key, string comment)
+            {
+                if (!suppressComments)
+                    base.SetComment(section, key, comment);
+                //else
+                //    base.SetComment(section, key, null);
+            }
+            public new void SetComment(MyIniKey key, string comment)
+            {
+                if (!suppressComments)
+                    base.SetComment(key, comment);
+                //else
+                //    base.SetComment(key, null);
+            }
         }
     }
 }
