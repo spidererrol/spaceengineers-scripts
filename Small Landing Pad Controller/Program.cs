@@ -51,6 +51,9 @@ namespace IngameScript
 
             console = ConsoleSurface.EasyConsole(this, consoleTag: "Control Status", sectionName: SectionName);
             console.ClearScreen();
+            console.Font = "Monospace";
+            console.FontSize = 1.0f;
+
             actionLines = new List<string>();
 
             //double unixTime = DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
@@ -295,6 +298,42 @@ namespace IngameScript
             throw new Exception("Out Of Cheese Error");
         }
 
+        private string StatesInfo(string level, IMyShipConnector connector, List<IMyLandingGear> gears)
+        {
+            string states = level + ": ";
+            // Might be nice to map out a little 2d image of the gears & connectors and draw it, but might take too much effort.
+            states += "[";
+            switch (connector.Status)
+            {
+                case MyShipConnectorStatus.Connectable:
+                    states += "~";
+                    break;
+                case MyShipConnectorStatus.Connected:
+                    states += "#";
+                    break;
+                case MyShipConnectorStatus.Unconnected:
+                    states += ".";
+                    break;
+            }
+            states += "] ";
+            foreach (IMyLandingGear gear in gears)
+            {
+                switch (gear.LockMode)
+                {
+                    case LandingGearMode.Locked:
+                        states += "#";
+                        break;
+                    case LandingGearMode.ReadyToLock:
+                        states += "~";
+                        break;
+                    case LandingGearMode.Unlocked:
+                        states += ".";
+                        break;
+                }
+            }
+            return states;
+        }
+
         private Dictionary<string, SideStates> ManageLights(Config.ConfigSection config)
         {
             IMyShipConnector topConnector = getBlockByName<IMyShipConnector>("Top");
@@ -308,6 +347,9 @@ namespace IngameScript
             Best(ref bottomState, bottomConnector);
             topGears.ForEach(g => Best(ref topState, g));
             bottomGears.ForEach(g => Best(ref bottomState, g));
+
+            console.Echo(StatesInfo("Top", topConnector, topGears));
+            console.Echo(StatesInfo("Bottom", bottomConnector, bottomGears));
 
             Color topColor = Col(topState);
             Color bottomColor = Col(bottomState);
