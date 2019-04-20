@@ -20,21 +20,17 @@ namespace IngameScript
 {
     partial class Program : MyGridProgram
     {
-        // This file contains your actual script.
-        //
-        // You can either keep all your code here, or you can create separate
-        // code files to make your program easier to navigate while coding.
-        //
-        // In order to add a new utility class, right-click on your project, 
-        // select 'New' then 'Add Item...'. Now find the 'Space Engineers'
-        // category under 'Visual C# Items' on the left hand side, and select
-        // 'Utility Class' in the main area. Name it in the box below, and
-        // press OK. This utility class will be merged in with your code when
-        // deploying your final script.
-        //
-        // You can also simply create a new utility class manually, you don't
-        // have to use the template if you don't want to. Just do so the first
-        // time to see what a utility class looks like.
+        #region mdk macros
+        /*
+         * TESTING SCRIPT!!!
+         * $MDK_DATETIME$
+         */
+        #endregion mdk macros
+
+        DateTime first;
+        long tick1;
+        long tick10;
+        long tick100;
 
         public Program()
         {
@@ -48,16 +44,17 @@ namespace IngameScript
             // It's recommended to set RuntimeInfo.UpdateFrequency 
             // here, which will allow your script to run itself without a 
             // timer block.
+            tick1 = 0;
+            tick10 = 0;
+            tick100 = 0;
+            Runtime.UpdateFrequency = UpdateFrequency.Update1 | UpdateFrequency.Update10 | UpdateFrequency.Update100;
         }
 
-        public void Save()
+        public string Show(long factor, long count, long seconds)
         {
-            // Called when the program needs to save its state. Use
-            // this method to save your state to the Storage field
-            // or some other means. 
-            // 
-            // This method is optional and can be removed if not
-            // needed.
+            if (count > 0)
+                return (factor * count / seconds).ToString();
+            return "(calculating...)";
         }
 
         public void Main(string argument, UpdateType updateSource)
@@ -72,7 +69,34 @@ namespace IngameScript
             // The method itself is required, but the arguments above
             // can be removed if not needed.
 
-            List<IMyBlockGroup> myBlocks = GetBlocks.GroupsByName("wibble");
+            if (first == default(DateTime))
+                first = DateTime.Now;
+
+            if (updateSource.HasFlag(UpdateType.Update1))
+                tick1++;
+            if (updateSource.HasFlag(UpdateType.Update10))
+                tick10++;
+            if (updateSource.HasFlag(UpdateType.Update100))
+                tick100++;
+
+            long seconds = (long)(DateTime.Now - first).TotalSeconds;
+
+            ConsoleSurface con = ConsoleSurface.EasyConsole(this, "[PLC]", "Pad Lifter Control");
+            ConsoleSurface.EchoFunc Echo = con.GetEcho();
+
+            Echo(first.ToString());
+            Echo(DateTime.Now + " (" + seconds + ")");
+
+            if (seconds > 0)
+            {
+                Echo("1: " + Show(1, tick1, seconds));
+                Echo("10: " + Show(10, tick10, seconds));
+                Echo("100: " + Show(100, tick100, seconds));
+            }
+            else
+            {
+                Echo("Please wait, calculating..." + seconds + "(" + DateTime.Now + ")");
+            }
         }
     }
 }
