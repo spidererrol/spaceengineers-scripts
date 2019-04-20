@@ -21,7 +21,7 @@ namespace IngameScript
 {
     partial class Program
     {
-        public class MultiSurface : IMyTextSurface, IEnumerable
+        public partial class MultiSurface : IMyTextSurface, IEnumerable
         {
             public class KeyBuilder
             {
