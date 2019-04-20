@@ -281,6 +281,13 @@ namespace IngameScript
             public bool WriteLine(string value, bool append = true) => WriteText(value + "\n", append);
 
             public bool ClearText() => WriteText("", false);
+
+            public List<string> GetFonts()
+            {
+                List<string> fonts = new List<string>();
+                GetFonts(fonts);
+                return fonts;
+            }
         }
     }
 }
