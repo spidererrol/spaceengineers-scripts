@@ -189,6 +189,8 @@ namespace IngameScript
                     return default(IType);
                 return hits.First();
             }
+            // Don't use this - there is no control over which grid nor the type so potential for conflicts are high:
+            //public IType ExactByName<IType>(string name) => (IType)GridTerminalSystem.GetBlockWithName(name);
 
             bool myGridOnly(IMyTerminalBlock block)
             {
