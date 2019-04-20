@@ -25,12 +25,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing", "Testing\Testing.
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Utility", "Utility\Utility.shproj", "{95803B2F-8472-4A93-B1F9-7F64CF81F211}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "StateMachine", "StateMachine\StateMachine.shproj", "{C96CDC9A-3F22-4185-A130-5788D100251A}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Config\Config.projitems*{233b804d-bc07-4b6c-b9aa-f06576e912bf}*SharedItemsImports = 4
 		GetBlocks\GetBlocks.projitems*{233b804d-bc07-4b6c-b9aa-f06576e912bf}*SharedItemsImports = 4
 		MultiSurface\MultiSurface.projitems*{233b804d-bc07-4b6c-b9aa-f06576e912bf}*SharedItemsImports = 4
-		TLib\TLib.projitems*{233b804d-bc07-4b6c-b9aa-f06576e912bf}*SharedItemsImports = 4
 		Utility\Utility.projitems*{233b804d-bc07-4b6c-b9aa-f06576e912bf}*SharedItemsImports = 4
 		GetBlocks\GetBlocks.projitems*{2c583596-20e0-4c07-b35d-29629f2d709e}*SharedItemsImports = 13
 		Config\Config.projitems*{47d20786-bdf8-44ec-8d4f-bd54154d0f98}*SharedItemsImports = 4
@@ -54,9 +55,11 @@ Global
 		Utility\Utility.projitems*{8b1a226d-4d69-43f1-872c-7aa71b00813b}*SharedItemsImports = 4
 		Utility\Utility.projitems*{95803b2f-8472-4a93-b1f9-7f64cf81f211}*SharedItemsImports = 13
 		MultiSurface\MultiSurface.projitems*{b50fc0f7-be50-4560-86b8-996f6f1c2d16}*SharedItemsImports = 13
+		StateMachine\StateMachine.projitems*{c96cdc9a-3f22-4185-a130-5788d100251a}*SharedItemsImports = 13
 		Config\Config.projitems*{ef8864c9-4c27-4a6c-a6a8-8bc2e5992c2e}*SharedItemsImports = 4
 		GetBlocks\GetBlocks.projitems*{ef8864c9-4c27-4a6c-a6a8-8bc2e5992c2e}*SharedItemsImports = 4
 		MultiSurface\MultiSurface.projitems*{ef8864c9-4c27-4a6c-a6a8-8bc2e5992c2e}*SharedItemsImports = 4
+		StateMachine\StateMachine.projitems*{ef8864c9-4c27-4a6c-a6a8-8bc2e5992c2e}*SharedItemsImports = 4
 		Utility\Utility.projitems*{ef8864c9-4c27-4a6c-a6a8-8bc2e5992c2e}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
