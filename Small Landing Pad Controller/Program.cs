@@ -31,6 +31,7 @@ namespace IngameScript
         private const double PowerFactor = 0.99; // Used to ensure that I get something to charge with.
         private const string MaintainanceTag = "Maintainance";
         private const string MaintainanceAccessName = "Maintainance Access";
+        private const string SectionName = "Pad Controller";
         ConsoleSurface console;
         List<string> actionLines;
         //DoorStatus hatchStatus = DoorStatus.Open; // If hatches are closed then I will turn everything off which is fine, if open then I will leave alone.
@@ -39,7 +40,7 @@ namespace IngameScript
         void Main(string argument, UpdateType updateType)
         {
             //float cycleRate = 0.0f;
-            Config.ConfigSection config = Config.Section(Me, "Pad Controller");
+            Config.ConfigSection config = Config.Section(Me, SectionName);
             //config.Get("CyclePads", cycleRate);
             //config.SetComment("CyclePads", "How may seconds to indicate for each gear. Set to zero to disable");
             config.Default("FullyChargedPercent", 99.0f);
@@ -48,7 +49,7 @@ namespace IngameScript
             config.SetComment("LowPowerPercent", "If batteries are below this level then power is considered critical");
             config.Save();
 
-            console = ConsoleSurface.EasyConsole(this, consoleTag: "Control Status", sectionName: "Pad Controller");
+            console = ConsoleSurface.EasyConsole(this, consoleTag: "Control Status", sectionName: SectionName);
             console.ClearScreen();
             actionLines = new List<string>();
 
