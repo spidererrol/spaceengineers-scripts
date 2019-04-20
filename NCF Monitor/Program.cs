@@ -82,9 +82,15 @@ namespace IngameScript
 
                 if (NFStat[i].IndexOf("Status") >= 0)
                 {
-                    isActive = false;
-                    ld.WriteText("Status: " + NFStat[i].Split(':')[1] + "\n", true);
-
+                    isActive = true;
+                    string nfStatus = NFStat[i].Split(':')[1];
+                    ld.WriteText("Status: " + nfStatus + "\n", true);
+                    switch (nfStatus)
+                    {
+                        case "Enabled":
+                            isActive = false;
+                            break;
+                    }
                 }
                 if (NFStat[i].IndexOf("Active Nanites") >= 0)
                 {
