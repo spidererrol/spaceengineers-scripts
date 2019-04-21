@@ -37,7 +37,7 @@ namespace IngameScript
             Runtime.UpdateFrequency = UpdateFrequency.Update10;
         }
 
-        public IMyTerminalBlock GetNaniteControl() => GetBlocks.FirstByName<IMyTerminalBlock>(NaniteTag, b => b.IsSameConstructAs(Me) && b.BlockDefinition.SubtypeName.Contains("NaniteControl"));
+        public IMyFunctionalBlock GetNaniteControl() => GetBlocks.FirstByName<IMyFunctionalBlock>(NaniteTag, b => b.IsSameConstructAs(Me) && b.BlockDefinition.SubtypeName.Contains("NaniteControl"));
         public IMyTerminalBlock GetNaniteOre() => GetBlocks.FirstByName<IMyTerminalBlock>(NaniteTag, b => b.BlockDefinition.SubtypeName.Contains("NaniteOre"));
 
         public void Main(string realargument)
@@ -50,7 +50,7 @@ namespace IngameScript
             ConsoleSurface con = ConsoleSurface.EasyConsole(this, ConsoleTag, SectionName);
             ConsoleSurface.EchoFunc Echo = con.GetEcho(); // Magically redirect Echo in this function to the con version!
 
-            IMyTerminalBlock nf = GetNaniteControl();
+            IMyFunctionalBlock nf = GetNaniteControl();
             IMyTerminalBlock nh = GetNaniteOre();
 
             #region mdk macros
@@ -78,6 +78,12 @@ namespace IngameScript
             ld.WriteText("-= Nanite Factory =- \n", false);
 
             bool isActive = true;
+            if (!nf.Enabled)
+            {
+                isActive = false;
+                ld.WriteLine("Turned off in terminal!");
+            }
+
             for (int i = 0; i < NFStat.Length; i++)
             {
 
@@ -137,10 +143,14 @@ namespace IngameScript
                     ld.WriteLine("----");
                 }
 
-                if (NFStat[0] == "")
+                if (nf == null)
                 {
                     ld.WriteText("You don't have Nanite Control Factory,\n or you named it incorrectly\n", false);
                     ld.WriteText("Check the mod's description, to know what's wrong...\n ", true);
+                }
+                else if (NFStat.Length == 0)
+                {
+                    ld.WriteLine("Unable to extract status information from Nanite Controller");
                 }
 
             }
