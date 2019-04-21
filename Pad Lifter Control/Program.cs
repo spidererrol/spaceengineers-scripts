@@ -266,14 +266,17 @@ namespace IngameScript
         }
         IEnumerator<bool> ContinueRelease()
         {
-            Utility.RunActions(GetPadConnector(padBottomConnnector), ActionLock);
-            yield return true;
+            if (padConnector.Status == MyShipConnectorStatus.Connected)
+            {
+                Utility.RunActions(GetPadConnector(padBottomConnnector), ActionLock);
+                yield return true;
 
-            Utility.RunActions(GetPadGears(padBottomGears), ActionLock);
-            yield return true;
+                Utility.RunActions(GetPadGears(padBottomGears), ActionLock);
+                yield return true;
 
-            Utility.RunActions(GetPadGears(padTopGears), ActionUnlock);
-            yield return true;
+                Utility.RunActions(GetPadGears(padTopGears), ActionUnlock);
+                yield return true;
+            }
 
             //Utility.RunActions(GetPadConnector(padTopConnector), ActionUnlock);
             Utility.RunActions(padConnector, ActionUnlock);
