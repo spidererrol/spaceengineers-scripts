@@ -134,12 +134,21 @@ namespace IngameScript
                     ld.WriteText("To Mine: " + NFStat[i].Split(':')[1] + " deposites\n", true);
                 }
 
-                if (NFStat[i].IndexOf("Missing components") >= 0)
+                if (NFStat[i].IndexOf("Needed parts:") >= 0)
                 {
                     ld.WriteText("---------------\nRequired: \n", true);
                     for (int j = i + 1; j < NFStat.Length - 1; j++)
                     {
-                        ld.WriteText("[" + NFStat[j] + "]\n", true);
+                        List<string> parts = new List<string>(NFStat[j].Split(':'));
+                        int count;
+                        if (parts.Count == 2 && int.TryParse(parts[1].Trim(), out count))
+                        {
+                            ld.WriteLine(parts[0].Trim() + ": " + Utility.DoubleToHUnit(count, format: "N0"));
+                        }
+                        else
+                        {
+                            ld.WriteText(NFStat[j] + "\n", true);
+                        }
                     }
                     ld.WriteLine("----");
                 }
