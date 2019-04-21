@@ -62,6 +62,7 @@ namespace IngameScript
                     {
                         return (value / mul).ToString(format) + si.Last().ToString();
                     }
+                    si = si.Substring(0, si.Length - 1);
                 }
                 return value.ToString(format);
             }
