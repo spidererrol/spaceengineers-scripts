@@ -267,15 +267,18 @@ namespace IngameScript
             private readonly IMyTerminalBlock termBlock;
             private string original;
             private bool suppressComments;
+            private readonly HashSet<string> deleteComments;
 
             /// <summary>
-            /// Unfortunatly this cannot actually remove comments (as that doesn't appear to be possible).
+            /// Removing comments is currently a little hackish
             /// </summary>
             /// <param name="set">set Suppress mode or not</param>
             /// <returns>Previous suppress mode</returns>
             public bool SuppressComments(bool set = true)
             {
                 bool ret = suppressComments;
+                if (ret != set)
+                    deleteComments.Clear();
                 suppressComments = set;
                 return ret;
             }
@@ -329,6 +332,7 @@ namespace IngameScript
             public Config() : base()
             {
                 suppressComments = false;
+                deleteComments = new HashSet<string>();
             }
 
             /// <summary>
@@ -381,6 +385,8 @@ namespace IngameScript
             public void Save(IMyTerminalBlock block)
             {
                 string output = this.ToString();
+                if (deleteComments.Any())
+                    output = string.Join("\n", new List<string>(output.Split('\n')).FindAll(l => !deleteComments.Contains(l.Length > 1 ? l.Substring(1) : l)));
                 if (output != original)
                 {
                     block.CustomData = output;
@@ -413,19 +419,21 @@ namespace IngameScript
                 return new ConfigSection(this, section);
             }
 
+            public void DeleteComment(string section, string key, string comment) => deleteComments.Add(comment);
+            public void DeleteComment(MyIniKey key, string comment) => DeleteComment(key.Section, key.Name, comment);
             public new void SetComment(string section, string key, string comment)
             {
-                if (!suppressComments)
+                if (suppressComments)
+                    DeleteComment(section, key, comment);
+                else
                     base.SetComment(section, key, comment);
-                //else
-                //    base.SetComment(section, key, null);
             }
             public new void SetComment(MyIniKey key, string comment)
             {
-                if (!suppressComments)
+                if (suppressComments)
+                    DeleteComment(key, comment);
+                else
                     base.SetComment(key, comment);
-                //else
-                //    base.SetComment(key, null);
             }
         }
     }
