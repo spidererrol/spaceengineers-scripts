@@ -454,7 +454,7 @@ namespace IngameScript
             unixTimestamp = (int)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
 
             string padConnectorName = "Pad Connector";
-            string dockConnectorName = "Dock Connector";
+            string dockConnectorName = "Docking Connector";
 
             Config.ConfigSection config = Config.Section(Me, Section);
             bool ConfigComments = true;
