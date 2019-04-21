@@ -255,6 +255,13 @@ namespace IngameScript
                 /// <exception cref="NoBlockSpecified">Thrown if this config was not created using an <see cref="IMyTerminalBlock"/></exception>
                 public void Save() => parent.Save();
 
+                public List<string> GetKeys()
+                {
+                    List<MyIniKey> iniKeys = new List<MyIniKey>();
+                    parent.GetKeys(iniKeys);
+                    return iniKeys.FindAll(ik => ik.Section == section).ConvertAll<string>(ik => ik.Name);
+                }
+
             }
 
             private readonly IMyTerminalBlock termBlock;
