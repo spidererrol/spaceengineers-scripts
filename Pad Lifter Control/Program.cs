@@ -230,6 +230,12 @@ namespace IngameScript
             Utility.RunActions(padConnector, ActionLock);
             yield return true;
 
+            if (GetPadConnector(padTopConnector).Status != MyShipConnectorStatus.Connected)
+            {
+                StickyMessage("Failed to lock Top Connector!");
+                yield return false;
+            }
+
             Utility.RunActions(GetPadConnector(padTopConnector), ActionLock);
             yield return true;
 
