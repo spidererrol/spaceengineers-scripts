@@ -91,8 +91,9 @@ namespace IngameScript
                 {
                     isActive = true;
                     string nfStatus = NFStat[i].Split(':')[1];
+                    nfStatus = nfStatus.Trim();
                     ld.WriteText("Status: " + nfStatus + "\n", true);
-                    Echo("NF Status: " + nfStatus);
+                    Echo("NF Status: '" + nfStatus + "'");
                     switch (nfStatus)
                     {
                         case "Enabled":
