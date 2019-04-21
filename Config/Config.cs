@@ -288,7 +288,7 @@ namespace IngameScript
             /// Additionally block is stored to be used with <see cref="Save()"/> later on.
             /// </summary>
             /// <param name="block">The <see cref="IMyTerminalBlock"/> to retrieve the config from.</param>
-            public Config(IMyTerminalBlock block) : base()
+            public Config(IMyTerminalBlock block) : this()
             {
                 termBlock = block;
                 Load(block);
