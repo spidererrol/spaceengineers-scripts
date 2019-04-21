@@ -401,22 +401,19 @@ namespace IngameScript
                     cmdqueue.Enqueue("Dock");
                 }
             }
-            else if (dockState == DockState.Undocked && dockConnector.Status == MyShipConnectorStatus.Connectable)
+            else if (AutoDock && dockState == DockState.Undocked && dockConnector.Status == MyShipConnectorStatus.Connectable)
             {
-                if (AutoDock)
-                {
-                    StickyMessage("Auto-dock");
-                    if (padState == PadState.Grabbed && newPadState == PadState.Released)
-                        cmdqueue.Enqueue("Grab");
-                    else if (padState == PadState.Released && newPadState == PadState.Grabbed)
-                        cmdqueue.Enqueue("Release");
-                    cmdqueue.Enqueue("Dock");
-                }
-                else
-                {
-                    StickyMessage("autofix", "Re-undocking");
-                    cmdqueue.Enqueue("Undock");
-                }
+                StickyMessage("Auto-dock");
+                if (padState == PadState.Grabbed && newPadState == PadState.Released)
+                    cmdqueue.Enqueue("Grab");
+                else if (padState == PadState.Released && newPadState == PadState.Grabbed)
+                    cmdqueue.Enqueue("Release");
+                cmdqueue.Enqueue("Dock");
+            }
+            else if (!AutoDock && dockState == DockState.Undocked && newDockState == DockState.Docked)
+            {
+                StickyMessage("autofix", "Re-undocking");
+                cmdqueue.Enqueue("Undock");
             }
             else if (padState == PadState.Grabbed && newPadState == PadState.Released)
             {
@@ -431,17 +428,14 @@ namespace IngameScript
                     cmdqueue.Enqueue("Grab");
                 }
             }
-            else if (padState == PadState.Released && padConnector.Status == MyShipConnectorStatus.Connectable)
+            else if (AutoGrab && padState == PadState.Released && padConnector.Status == MyShipConnectorStatus.Connectable)
             {
-                if (AutoGrab)
-                {
-                    cmdqueue.Enqueue("Grab");
-                }
-                else
-                {
-                    StickyMessage("autofix", "Re-releasing pad");
-                    cmdqueue.Enqueue("Release");
-                }
+                cmdqueue.Enqueue("Grab");
+            }
+            else if (!AutoGrab && padState == PadState.Released && newPadState == PadState.Grabbed)
+            {
+                StickyMessage("autofix", "Re-releasing pad");
+                cmdqueue.Enqueue("Release");
             }
         }
 
