@@ -281,7 +281,7 @@ namespace IngameScript
 
             Utility.RunActions(padConnector, ActionOff);
             DateTime delayUntil = DateTime.Now + TimeSpan.FromSeconds(UndockOffSecs);
-            StickyMessage("Progress", "READY - Move away from connector!");
+            StickyMessage("Progress", "READY");
             padState = PadState.Released;
             yield return true;
 
@@ -337,7 +337,7 @@ namespace IngameScript
 
             Utility.RunActions(dockConnector, ActionOff);
             DateTime delayUntil = DateTime.Now + TimeSpan.FromSeconds(UndockOffSecs);
-            StickyMessage("Progress", "READY - Move away from connector!");
+            StickyMessage("Progress", "READY");
             dockState = DockState.Undocked;
             yield return true;
 
