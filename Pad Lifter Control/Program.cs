@@ -459,8 +459,11 @@ namespace IngameScript
             Config.ConfigSection config = Config.Section(Me, Section);
             bool ConfigComments = true;
             config.Get("ConfigComments", ref ConfigComments);
+            if (ConfigComments)
+                config.SetComment("ConfigComments", "Set to false to remove informational comments from this config.");
+            else
+                config.SetComment("ConfigComments", "Set to true to add informational comments to this config.");
             config.Config.SuppressComments(!ConfigComments);
-            config.SetComment("ConfigComments", "Set to false to prevent re-adding these informational comments. Unfortunatly you will still have to remove them yourself.");
             config.Key("Pad Connector").Get(ref padConnectorName).Comment("Name of the connector which connects to pads");
             config.Key("Dock Connector").Get(ref dockConnectorName).Comment("Name of the connector which connects to a dock");
             config.Key("Tag").Get(ref tag).Comment("Tag for which screen(s) to display information on");
