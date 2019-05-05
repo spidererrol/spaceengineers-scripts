@@ -37,7 +37,7 @@ namespace IngameScript
         // Map item names to what assemblers need to see:
         Dictionary<string, string> item2definition = new Dictionary<string, string>
         {
-            //{ "advancedpowercell","MyObjectBuilder_BlueprintDefinition/AdvancedPowerCell" },
+            { "advancedpowercell","MyObjectBuilder_BlueprintDefinition/AdvancedPowerCell" },
             { "paintgunmag","MyObjectBuilder_BlueprintDefinition/Blueprint_PaintGunMag" },
             { "explosionfuel","MyObjectBuilder_BlueprintDefinition/bpExplosionFuel" },
             { "implosionfuel","MyObjectBuilder_BlueprintDefinition/bpImplosionFuel" },
