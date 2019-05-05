@@ -32,6 +32,7 @@ namespace IngameScript
         }
 
         const string default_component_maintype = "MyObjectBuilder_BlueprintDefinition";
+        private const string DebugTag = "[AutomatedAssembler-Debug]";
 
         // Map item names to what assemblers need to see:
         Dictionary<string, string> item2definition = new Dictionary<string, string>
@@ -165,7 +166,7 @@ namespace IngameScript
         void DebugInit()
         {
             console = ConsoleSurface.EasyConsole(this);
-            console.Add(GetBlocks.ByName<IMyTextPanel>("AutomatedAssembler-Debug"));
+            console.Add(GetBlocks.ByName<IMyTextPanel>(DebugTag));
         }
 
         void Debug(string msg)
@@ -372,6 +373,8 @@ namespace IngameScript
             {
                 Debug("Command line " + i);
                 string commandline = commands[i].Trim();
+                if (commandline.StartsWith("show "))
+                    commandline = commandline.Replace("show ", "show");
                 string[] command = commandline.Split(' ');
                 //Debug("$" + commandline);
                 if (command[0].StartsWith("//") || command[0].StartsWith("#")) // Comments
@@ -443,6 +446,7 @@ namespace IngameScript
                     case "showcomponents":
                         showcomponents = true;
                         break;
+                    case "showrecipes":
                     case "showrecipies":
                         showrecipies = true;
                         break;
@@ -494,6 +498,7 @@ namespace IngameScript
                                 }
                                 break;
                             case "recipe":
+                            case "recipes":
                             case "recipies":
                                 i++;
                                 commandline = commands[i];

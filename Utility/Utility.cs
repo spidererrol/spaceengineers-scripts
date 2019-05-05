@@ -23,7 +23,7 @@ namespace IngameScript
         public static class Utility
         {
             private const string MULTIPLIERS = ".kMGTPEZY";
-            private static readonly System.Text.RegularExpressions.Regex reHUnit = new System.Text.RegularExpressions.Regex(@"^(\d*\.\d+|\d+)([kMGTPEZY])(.*)$");
+            private static readonly System.Text.RegularExpressions.Regex reHUnit = new System.Text.RegularExpressions.Regex(@"^(\d*\.\d+|\d+)\s*([kMGTPEZY])(.*)$");
             private static readonly System.Text.RegularExpressions.Regex reJumpDriveMaxPower = new System.Text.RegularExpressions.Regex("Max Stored Power: (\\d+\\.?\\d*) (\\w?)Wh", System.Text.RegularExpressions.RegexOptions.Singleline);
             private static readonly System.Text.RegularExpressions.Regex reJumpDriveCurPower = new System.Text.RegularExpressions.Regex("Stored power: (\\d+\\.?\\d*) (\\w?)Wh", System.Text.RegularExpressions.RegexOptions.Singleline);
 
@@ -43,12 +43,27 @@ namespace IngameScript
                 System.Text.RegularExpressions.Match match = re.Match(hunit);
                 if (match.Success)
                 {
-                    double parsedDouble = Double.Parse(match.Groups[1].Value);
-                    return parsedDouble * Math.Pow(1000.0, MULTIPLIERS.IndexOf(match.Groups[2].Value));
+                    double parsedDouble;
+                    if (double.TryParse(match.Groups[1].Value, out parsedDouble))
+                    {
+                        return parsedDouble * Math.Pow(1000.0, MULTIPLIERS.IndexOf(match.Groups[2].Value));
+                    }
+                    else
+                    {
+                        throw new Exception("Cannot parse '" + match.Groups[1].Value + "' as a double in " + hunit);
+                    }
                 }
                 else
                 {
-                    return double.Parse(hunit);
+                    double parsedDouble;
+                    if (double.TryParse(hunit, out parsedDouble))
+                    {
+                        return parsedDouble;
+                    }
+                    else
+                    {
+                        throw new Exception("Cannot parse '" + hunit + "' as a double");
+                    }
                 }
             }
 
