@@ -22,14 +22,18 @@ namespace IngameScript
     {
         public partial class GetBlocksClass
         {
+            private readonly IDictionary<string, object> propCache;
             private readonly IMyGridTerminalSystem GridTerminalSystem;
             private readonly IMyTerminalBlock Me;
             private GetBlocksClass(IMyGridTerminalSystem gts, IMyTerminalBlock refblock)
             {
                 GridTerminalSystem = gts;
                 Me = refblock;
+                propCache = new Dictionary<string, object>();
             }
             public GetBlocksClass(Program program) : this(program.GridTerminalSystem, program.Me) { }
+
+            public void ClearCache() => propCache.Clear();
 
             public GetBlocksClass OtherGrid(IMyTerminalBlock refblock) => new GetBlocksClass(GridTerminalSystem, refblock);
 
@@ -64,6 +68,24 @@ namespace IngameScript
                 }
                 return ret;
             }
+
+            public List<IMyTerminalBlock> GetAllBlocks()
+            {
+                List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
+                GridTerminalSystem.GetBlocks(blocks);
+                return blocks;
+            }
+
+            private delegate object cacheGetter(string cacheid);
+            private IType Cached<IType>(string cacheid, cacheGetter get)
+            {
+                if (!propCache.ContainsKey(cacheid))
+                    propCache.Add(cacheid, get(cacheid));
+                return (IType)propCache[cacheid];
+            }
+            private IList<IType> CachedList<IType>(string cacheid, cacheGetter get) => Cached<List<IType>>(cacheid, get);
+
+            public IList<IMyTerminalBlock> Everything => CachedList<IMyTerminalBlock>("Everything", id => GetAllBlocks());
 
             public List<IType> ByType<IType>(bool thisgrid = true) where IType : IMyTerminalBlock => ByType<IType>(UseMyGridFilter(thisgrid));
             public List<IType> ByType<IType>(BlockFilter blockFilter) where IType : IMyTerminalBlock

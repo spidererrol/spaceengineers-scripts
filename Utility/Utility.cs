@@ -147,7 +147,7 @@ namespace IngameScript
                     return true;
             }
 
-            public static string List2String<T>(List<T> list)
+            public static string List2String<T>(IList<T> list)
             {
                 string ret = "";
                 for (int i = 0; i < list.Count; i++)

@@ -9,6 +9,7 @@
     <Import_RootNamespace>Config</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Config-Multisurface.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Config.cs" />
   </ItemGroup>
 </Project>

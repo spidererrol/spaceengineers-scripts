@@ -45,7 +45,7 @@ namespace IngameScript
                         else if (s == SURFACEDISPLAYNAME)
                             ret += displayname;
                         else if (s == SURFACEPOS)
-                            ret += pos.ToString();
+                            ret += pos.ToString("F0");
                         else
                             ret += s;
                     });
@@ -58,37 +58,32 @@ namespace IngameScript
                 List<IMyTextSurface> Surfaces(IMyTextSurfaceProvider provider);
             }
 
-            public class SurfaceConfigFilter : ISurfaceFilter
+            public class SurfaceConfigParserFilter : ISurfaceFilter
             {
-
-                private readonly string section;
+                public delegate bool GetConfigFunc(IMyTextSurfaceProvider block, string display_name_or_id);
+                private readonly GetConfigFunc getconfig;
                 private readonly KeyBuilder keypattern;
-
-                public string Section => section;
 
                 public string Key(string displayname, string idname, int pos) => keypattern.Build(displayname, idname, pos);
 
-                public SurfaceConfigFilter(string configSection, KeyBuilder configKey)
+                public SurfaceConfigParserFilter(GetConfigFunc getConfigFunc, KeyBuilder keyBuilder)
                 {
-                    section = configSection;
-                    keypattern = configKey;
+                    getconfig = getConfigFunc;
+                    keypattern = keyBuilder;
                 }
 
                 public List<IMyTextSurface> Surfaces(IMyTextSurfaceProvider block)
                 {
                     List<IMyTextSurface> surfaces = new List<IMyTextSurface>();
-                    Config.ConfigSection config = Config.Section((IMyTerminalBlock)block, section);
                     for (int i = 0; i < block.SurfaceCount; i++)
                     {
                         IMyTextSurface surface = block.GetSurface(i);
-                        if (config.Get(Key(surface.DisplayName, surface.Name, i), false))
+                        if (getconfig(block, Key(surface.DisplayName, surface.Name, i)))
                             surfaces.Add(surface);
                     }
                     return surfaces;
                 }
             }
-
-            public static ISurfaceFilter MakeSurfaceConfigFilter(string section, params string[] keyparts) => new SurfaceConfigFilter(section, new KeyBuilder(keyparts));
 
             public class SurfaceORFilter : ISurfaceFilter
             {
@@ -113,11 +108,12 @@ namespace IngameScript
             }
             public static ISurfaceFilter MakeSurfaceOR(params ISurfaceFilter[] filters) => new SurfaceORFilter(filters);
 
-            public const string ShowOnScreenPrefix = "ShowOnScreen_";
-            public static ISurfaceFilter ShowOnScreenFilter(string SectionName) => MakeSurfaceOR(
-                    MakeSurfaceConfigFilter(SectionName, ShowOnScreenPrefix, KeyBuilder.SURFACEDISPLAYNAME),
-                    MakeSurfaceConfigFilter(SectionName, ShowOnScreenPrefix, KeyBuilder.SURFACEIDNAME),
-                    MakeSurfaceConfigFilter(SectionName, ShowOnScreenPrefix, KeyBuilder.SURFACEPOS)
+            protected const string ShowOnScreenPrefix = "ShowOnScreen_";
+            public static ISurfaceFilter MakeSurfaceConfigParserFilter(SurfaceConfigParserFilter.GetConfigFunc parser, params string[] keyparts) => new SurfaceConfigParserFilter(parser, new KeyBuilder(keyparts));
+            public static ISurfaceFilter ShowOnScreenFilter(SurfaceConfigParserFilter.GetConfigFunc parser) => MakeSurfaceOR(
+                    MakeSurfaceConfigParserFilter(parser, ShowOnScreenPrefix, KeyBuilder.SURFACEDISPLAYNAME),
+                    MakeSurfaceConfigParserFilter(parser, ShowOnScreenPrefix, KeyBuilder.SURFACEIDNAME),
+                    MakeSurfaceConfigParserFilter(parser, ShowOnScreenPrefix, KeyBuilder.SURFACEPOS)
                     );
 
             protected List<IMyTextSurface> surfaces;
@@ -155,6 +151,8 @@ namespace IngameScript
                 return ret;
             }
 
+            public void Add(IMyTextPanel surface) => Add((IMyTextSurface)surface);
+            public void Add(List<IMyTextPanel> surfaces) => Add(surfaces.ConvertAll(p => (IMyTextSurface)p));
             public void Add(IMyTextSurface surface) => surfaces.Add(surface);
             public void Add(List<IMyTextSurface> newsurfaces) => surfaces.AddList(newsurfaces);
             public void Add(IMyTextSurfaceProvider provider, string surface) => surfaces.AddList(ProviderSurfaces(provider).FindAll(s => s.Name == surface));
