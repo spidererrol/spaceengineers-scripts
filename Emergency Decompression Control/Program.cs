@@ -21,6 +21,9 @@ namespace IngameScript
 {
     partial class Program : MyGridProgram
     {
+        #region mdk macros
+        const string ReleaseDate = "$MDK_DATETIME$";
+        #endregion mdk macros
 
         /// <summary>
         /// Section name to use when reading config from Custom Data.
