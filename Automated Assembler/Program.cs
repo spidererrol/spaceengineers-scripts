@@ -963,7 +963,7 @@ namespace IngameScript
                     inQueue.Add(item.Key);
                     if (!need.ContainsKey(item.Key))
                     {
-                        Status(string.Format("-{0}={1}", item.Key, item.Value));
+                        Status(string.Format("-{0}={1}", SimplifyComponent(item.Key), item.Value));
                         ass.RemoveQueueItem(q, (double)item.Value);
                     }
                 }
@@ -976,7 +976,7 @@ namespace IngameScript
                     double dBuildCount = nv.Value;
                     //dBuildCount /= assemblers.Count;
                     dBuildCount *= 0.1;
-                    Status(string.Format("+{0}={1}", nv.Key, nv.Value));
+                    Status(string.Format("+{0}={1}", SimplifyComponent(nv.Key), nv.Value));
                     ass.AddQueueItem(def, Math.Ceiling(dBuildCount));
                     inQueue.Add(nv.Key);
                 }
