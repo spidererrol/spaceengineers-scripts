@@ -397,9 +397,10 @@ namespace IngameScript
             string suffix = config.Get("Suffix", "]");
             string consoletag = config.Get("ConsoleTo", "##EDC##");
             bool useecho = config.Get("Echo", true);
+            bool useself = config.Get("Self", true);
             config.Save();
 
-            console = ConsoleSurface.EasyConsole(this, consoletag, SectionName, useecho);
+            console = ConsoleSurface.EasyConsole(this, consoletag, SectionName, useecho, useself);
 
             string sTags = System.Text.RegularExpressions.Regex.Escape(prefix) + @"(.+?)(!?)" + System.Text.RegularExpressions.Regex.Escape(suffix);
             System.Text.RegularExpressions.Regex reTags = new System.Text.RegularExpressions.Regex(sTags);
