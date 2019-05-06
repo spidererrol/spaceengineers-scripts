@@ -2,8 +2,7 @@
  Emergency Decompression Control
  ===============================
 
- This script will manage doors on your station to minimize the impace of
- decompression events.
+ This script will manage doors on your station to minimize the impace of decompression events.
 
  Quick Start
  -----------
@@ -96,5 +95,29 @@
     LeakBlinkLength=0.01
     LeakBlinkIntervalSeconds=2
     LeakBlinkOffset=0
+
+ 4. Door override open duration
+
+ When a door is sealed by EDC, you can still operate it manually. If you leave it open then EDC will
+ automatically close it after approximately 11 seconds. You can control this time by adjusting the 
+ "OpenSeconds" value.
+    [EDC]
+    OpenSeconds=30
+
+ You can of course always edit the door name and remove the markers to make EDC stop controlling the
+ door.
+
+ 5. Status display
+
+ By default a status is displayed on the monitor of the programming block and also in the detailed
+ info of the programming block in the terminal. This can be disabled by setting "Self" or "Echo" to
+ "false" respectivly.
+   [EDC]
+   Self=false
+   Echo=false
+ 
+ You can output a simple text status screen to LCDs, Text Panels or any block with a "surface".
+ Mark the block to display on with "##EDC##" (this can be changed with the "ConsoleTo" setting).
+ This alone is sufficent for LCDs and Text Panels, for surfaces...
 
 */
