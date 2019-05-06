@@ -13,8 +13,8 @@
  the programming block and it will automatically start and output some information to the monitor.
 
  Your ship or station must be divided into "zones". Each zone must have at least one vent and each
- zone must have doors between it and every connected zone (ie so you can isolate a zone with a
- leak). Each zone must have a unique name made up of only letters, numbers or spaces.
+ zone must have doors between it and every zone it is connected to (ie so you can isolate a zone
+ with a leak). Each zone must have a unique name made up of only letters, numbers or spaces.
 
  Adjust the name of each vent to contain "[#" + the zone name + "]" (Eg "[#Bridge]"). You can leave
  any other parts of the name intact (Eg "Air Vent 1 [#Bridge]").
@@ -25,6 +25,8 @@
  You can also have lights which indicate pressure states for each zone. They should be labeled
  with the zone they are monitoring (Eg "[#Bridge]"). By default they will be turned on when the
  zone is depresurized and off when it is pressurized (set up colors and flashing as you like).
+
+ That is it for a basic functional setup!
 
  There are also advanced configurations that you can do as detailed below.
 
