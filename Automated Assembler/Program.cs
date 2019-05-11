@@ -283,14 +283,26 @@ namespace IngameScript
 
         private string FindComponent(string description)
         {
-            if (quotas.ContainsKey(description))
-                return description.ToLower();
-            if (quotas.ContainsKey(description.Replace(" ", "")))
-                return description.Replace(" ", "").ToLower();
+            string dns = description.Replace(" ", "");
+            if (quotas.ContainsKey(dns))
+                return dns.ToLower();
             if (disp2real.ContainsKey(description))
                 return disp2real[description].ToLower();
-            if (item2definition.ContainsKey(description.ToLower()))
-                return description.ToLower();
+            if (item2definition.ContainsKey(dns.ToLower()))
+                return dns.ToLower();
+            if (description.EndsWith(".."))
+            { // Probably cut off, need a more complex search:
+                description = description.Substring(0, description.Length - 2);
+                dns = description.Replace(" ", "");
+                Debug("Searching using '" + description + "'");
+                HashSet<string> hits = new HashSet<string>();
+                quotas.Keys.ToList().FindAll(i => i.StartsWith(dns)).ForEach(i => hits.Add(i.ToLower()));
+                disp2real.Keys.ToList().FindAll(i => i.StartsWith(description)).ConvertAll(i => disp2real[i]).ForEach(i => hits.Add(i.ToLower()));
+                item2definition.Keys.ToList().FindAll(i => i.StartsWith(dns.ToLower())).ForEach(i => hits.Add(i.ToLower()));
+                if (hits.Count == 1)
+                    return hits.First();
+                Debug("Multiple hits - cannot determine which to match (" + Utility.List2String(hits.ToList()) + ")");
+            }
             return null;
         }
 
