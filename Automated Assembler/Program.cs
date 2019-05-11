@@ -21,7 +21,7 @@ namespace IngameScript
     partial class Program : MyGridProgram
     {
         // AutomatedAssembler.cs
-        // Automated Assembler v2.1
+        // Automated Assembler v2.2
         #region mdk macros
         // Deployed: $MDK_DATETIME$
         #endregion mdk macros
