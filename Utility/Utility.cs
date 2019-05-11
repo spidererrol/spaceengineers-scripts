@@ -67,7 +67,7 @@ namespace IngameScript
                 }
             }
 
-            public static string DoubleToHUnit(double value, double demultiplier = 1, string format = "N")
+            public static string DoubleToHUnit(double value, double demultiplier = 1, string format = "N", string seperator = "")
             {
                 string si = MULTIPLIERS;
                 while (si.Length > 1)
@@ -75,7 +75,7 @@ namespace IngameScript
                     double mul = Math.Pow(1000.0, si.Length - 1);
                     if (value >= mul)
                     {
-                        return (value / mul).ToString(format) + si.Last().ToString();
+                        return (value / mul).ToString(format) + seperator + si.Last().ToString();
                     }
                     si = si.Substring(0, si.Length - 1);
                 }
