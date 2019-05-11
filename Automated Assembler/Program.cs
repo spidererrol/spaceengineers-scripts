@@ -177,9 +177,11 @@ namespace IngameScript
 
         void SetQuota(string item, int qty)
         {
+            Debug("SetQuota(" + item + "," + qty + ")");
             item = item.Trim('"', '\'', ' ');
             if (quotas.ContainsKey(item))
             {
+                Debug("Quota[" + item + "] = " + quotas[item] + " => " + qty);
                 quotas[item] = qty;
             }
             else
@@ -189,6 +191,7 @@ namespace IngameScript
                 {
                     if (qkey.ToLower() == item.ToLower())
                     {
+                        Debug("quota[" + qkey + "] = " + qty);
                         quotas[qkey] = qty;
                         return;
                     }
@@ -204,6 +207,12 @@ namespace IngameScript
 
                 if (item2definition.ContainsKey(item.ToLower()))
                 {
+                    if (item.ToLower() == item)
+                    {
+                        System.Globalization.TextInfo textInfo = System.Globalization.CultureInfo.CurrentCulture.TextInfo;
+                        item = textInfo.ToTitleCase(item);
+                    }
+
                     Status("Adding quota for: " + item);
                     quotas.Add(item, qty);
                 }
@@ -214,10 +223,7 @@ namespace IngameScript
             }
         }
 
-        void SetQuota(string item, string qty)
-        {
-            SetQuota(item, HUnit(qty));
-        }
+        void SetQuota(string item, string qty) => SetQuota(item, HUnit(qty));
 
         class LinkOrder<IMyType> : IComparer<IMyType> where IMyType : IMyTerminalBlock
         {
@@ -241,6 +247,7 @@ namespace IngameScript
 
         void ImportLCD(string LCDname)
         {
+            Debug("Import LCD: " + LCDname);
             List<IMyTextPanel> panels = GetBlocks.ByName<IMyTextPanel>(LCDname);
             string combined = "";
             panels.Sort(new LinkOrder<IMyTextPanel>());
@@ -258,9 +265,15 @@ namespace IngameScript
                     System.Text.RegularExpressions.Match match = matches[m];
                     if (!match.Success)
                         continue;
+                    Debug(" Searching for " + match.Groups[1].Value);
                     string comp = FindComponent(match.Groups[1].Value);
                     if (comp == null)
+                    {
+                        Debug("  No match");
                         continue;
+                    }
+                    Debug("  =" + comp);
+
                     int quota = HUnit(match.Groups[2].Value);
                     SetQuota(comp, quota);
                 }
@@ -275,6 +288,8 @@ namespace IngameScript
                 return description.Replace(" ", "").ToLower();
             if (disp2real.ContainsKey(description))
                 return disp2real[description].ToLower();
+            if (item2definition.ContainsKey(description.ToLower()))
+                return description.ToLower();
             return null;
         }
 
