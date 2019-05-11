@@ -259,7 +259,7 @@ namespace IngameScript
                 {
                     List<MyIniKey> iniKeys = new List<MyIniKey>();
                     parent.GetKeys(iniKeys);
-                    return iniKeys.FindAll(ik => ik.Section == section).ConvertAll<string>(ik => ik.Name);
+                    return iniKeys.FindAll(ik => ik.Section == section).ConvertAll(ik => ik.Name);
                 }
 
             }
