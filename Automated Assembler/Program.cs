@@ -440,6 +440,18 @@ namespace IngameScript
                     case "showquotas":
                         showquotas = true;
                         break;
+                    case "alias":
+                        List<string> aliasparts = ParseCommand(command[0], commandline);
+                        if (aliasparts.Count != 2)
+                        {
+                            Status("Invalid alias line: " + commandline);
+                            continue;
+                        }
+                        if (disp2real.ContainsKey(aliasparts[0]))
+                            disp2real[aliasparts[0]] = aliasparts[1];
+                        else
+                            disp2real.Add(aliasparts[0], aliasparts[1]);
+                        break;
                     case "component":
                     case "components":
                         List<string> parts = ParseCommand(command[0], commandline);
@@ -482,6 +494,27 @@ namespace IngameScript
                     case "begin":
                         switch (command[1].ToLower())
                         {
+                            case "alias":
+                                i++;
+                                commandline = commands[i];
+                                command = commandline.Split(' ');
+                                while (command[0].ToLower() != "end")
+                                {
+                                    List<string> aliasparts2 = ParseCommand(commandline);
+                                    if (aliasparts2.Count != 2)
+                                    {
+                                        Status("Invalid alias line: " + commandline);
+                                        continue;
+                                    }
+                                    if (disp2real.ContainsKey(aliasparts2[0]))
+                                        disp2real[aliasparts2[0]] = aliasparts2[1];
+                                    else
+                                        disp2real.Add(aliasparts2[0], aliasparts2[1]);
+                                    i++;
+                                    commandline = commands[i];
+                                    command = commandline.Split(' ');
+                                }
+                                break;
                             case "quota":
                                 i++;
                                 commandline = commands[i];
