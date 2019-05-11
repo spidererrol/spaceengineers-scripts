@@ -188,7 +188,13 @@ namespace IngameScript
                 {
                     if (NHStat[j2].StartsWith("- "))
                         NHStat[j2] = NHStat[j2].Remove(0, 2);
-                    ld.WriteText("[" + NHStat[j2] + "]\n", true);
+                    string oreamount = NHStat[j2];
+                    int seppos = oreamount.IndexOf(": ");
+                    string ore = oreamount.Substring(0, seppos);
+                    string sAmount = oreamount.Substring(seppos + 2);
+                    int iAmount = int.Parse(sAmount);
+                    string hAmount = Utility.DoubleToHUnit(iAmount, format: "N0");
+                    ld.WriteText(ore + ": " + hAmount + "\n", true);
                 }
 
 
