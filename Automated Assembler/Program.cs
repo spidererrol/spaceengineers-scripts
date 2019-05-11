@@ -90,6 +90,7 @@ namespace IngameScript
         // Quotas
         Dictionary<string, int> quotas = new Dictionary<string, int> {
             {"BulletproofGlass",12000},
+            {"Canvas",300 },
             {"Computer",6500},
             {"Construction",50000},
             {"Detector",400},
