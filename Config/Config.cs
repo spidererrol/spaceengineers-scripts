@@ -20,99 +20,17 @@ namespace IngameScript
 {
     partial class Program
     {
+
         /// <summary>
         /// Handle storing configuration on an <see cref="IMyTerminalBlock"/> in <see cref="MyIni"/> format.
         /// </summary>
         class Config : MyIni
         {
-            public class ConfigSectionKey
-            {
-                protected readonly ConfigSection parent;
-                protected readonly string key;
-
-                public ConfigSection Section => parent;
-                public string Key => key;
-
-                public ConfigSectionKey(ConfigSection configSection, string keyname)
-                {
-                    parent = configSection;
-                    key = keyname;
-                }
-
-                public ConfigSectionKey Comment(string comment)
-                {
-                    parent.SetComment(key, comment);
-                    return this;
-                }
-                public string Comment() => parent.GetComment(key);
-                public ConfigSectionKey SetComment(string comment) => Comment(comment);
-                public string GetComment() => Comment();
-
-                public string Get(string defvalue) => parent.Get(key, defvalue);
-                public int Get(int defvalue) => parent.Get(key, defvalue);
-                public float Get(float defvalue) => parent.Get(key, defvalue);
-                public bool Get(bool defvalue) => parent.Get(key, defvalue);
-
-                public ConfigSectionKey Get(ref string value)
-                {
-                    parent.Get(key, ref value);
-                    return this;
-                }
-                public ConfigSectionKey Get(ref float value)
-                {
-                    parent.Get(key, ref value);
-                    return this;
-                }
-                public ConfigSectionKey Get(ref int value)
-                {
-                    parent.Get(key, ref value);
-                    return this;
-                }
-                public ConfigSectionKey Get(ref bool value)
-                {
-                    parent.Get(key, ref value);
-                    return this;
-                }
-
-                public MyIniValue Get() => parent.Get(key);
-
-                public ConfigSectionKey Set(string value)
-                {
-                    parent.Set(key, value);
-                    return this;
-                }
-                public ConfigSectionKey Set(bool value)
-                {
-                    parent.Set(key, value);
-                    return this;
-                }
-                public ConfigSectionKey Set(int value)
-                {
-                    parent.Set(key, value);
-                    return this;
-                }
-                public ConfigSectionKey Set(float value)
-                {
-                    parent.Set(key, value);
-                    return this;
-                }
-
-                public ConfigSectionKey Save()
-                {
-                    parent.Save();
-                    return this;
-                }
-                public ConfigSectionKey Save(IMyTerminalBlock block)
-                {
-                    parent.Save(block);
-                    return this;
-                }
-            }
-
+            
             /// <summary>
             /// This represents a single section within a <see cref="IngameScript.Config"/>.
             /// </summary>
-            public class ConfigSection
+            public class ConfigSection : IConfigSection
             {
                 private readonly Config parent;
                 private readonly string section;
@@ -160,6 +78,8 @@ namespace IngameScript
                     parent = new Config(start);
                     section = mySection;
                 }
+
+                public bool IsReadOnly() => false;
 
                 public ConfigSectionKey Key(string key) => new ConfigSectionKey(this, key);
 
@@ -241,6 +161,8 @@ namespace IngameScript
                 public void Default(string key, int value) => Get(key, value);
                 public void Default(string key, float value) => Get(key, value);
                 public void Default(string key, bool value) => Get(key, value);
+
+                public void Delete(string key) => parent.Delete(section, key);
 
                 /// <summary>
                 /// Save ENTIRE config to block.
