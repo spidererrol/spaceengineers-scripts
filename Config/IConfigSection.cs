@@ -348,5 +348,51 @@ namespace IngameScript
 
             public void SetComment(string key, string comment) => accessConfigSections.FindAll(a => a.writable && a.configSection.ContainsKey(key)).ForEach(a => a.configSection.SetComment(key, comment));
         }
+
+        public abstract class BaseConfigSection : IConfigSection
+        {
+            protected IConfigSection section;
+
+            public BaseConfigSection(IConfigSection configSection)
+            {
+                section = configSection;
+                ApplyDefaults();
+            }
+            public BaseConfigSection(IMyProgrammableBlock Me, string SectionName) : this(Config.Section(Me, SectionName)) { }
+
+            public abstract void ApplyDefaults();
+
+            // IConfigSection interface:
+            public bool ContainsKey(string key) => section.ContainsKey(key);
+            public void Default(string key, bool value) => section.Default(key, value);
+            public void Default(string key, float value) => section.Default(key, value);
+            public void Default(string key, int value) => section.Default(key, value);
+            public void Default(string key, string value) => section.Default(key, value);
+            public void Delete(string key) => section.Delete(key);
+            public MyIniValue Get(string key) => section.Get(key);
+            public bool Get(string key, bool defaultvalue) => section.Get(key, defaultvalue);
+            public float Get(string key, float defaultvalue) => section.Get(key, defaultvalue);
+            public int Get(string key, int defaultvalue) => section.Get(key, defaultvalue);
+            public void Get(string key, ref bool value) => section.Get(key, ref value);
+            public void Get(string key, ref float value) => section.Get(key, ref value);
+            public void Get(string key, ref int value) => section.Get(key, ref value);
+            public void Get(string key, ref string value) => section.Get(key, ref value);
+            public string Get(string key, string defaultvalue) => section.Get(key, defaultvalue);
+            public bool GetBool(string key) => section.GetBool(key);
+            public string GetComment(string key) => section.GetComment(key);
+            public float GetFloat(string key) => section.GetFloat(key);
+            public int GetInt(string key) => section.GetInt(key);
+            public List<string> GetKeys() => section.GetKeys();
+            public string GetString(string key) => section.GetString(key);
+            public bool IsReadOnly() => section.IsReadOnly();
+            public ConfigSectionKey Key(string key) => section.Key(key);
+            public void Save() => section.Save();
+            public void Save(IMyTerminalBlock block) => section.Save(block);
+            public void Set(string key, bool value) => section.Set(key, value);
+            public void Set(string key, float value) => section.Set(key, value);
+            public void Set(string key, int value) => section.Set(key, value);
+            public void Set(string key, string value) => section.Set(key, value);
+            public void SetComment(string key, string comment) => section.SetComment(key, comment);
+        }
     }
 }
