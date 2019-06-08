@@ -138,10 +138,126 @@ namespace IngameScript
             void SetComment(string key, string comment);
         }
 
-        public class DictConfigSection : IConfigSection
+        public abstract class AConfigSection : IConfigSection
+        {
+            public abstract bool ContainsKey(string key);
+            public abstract void Delete(string key);
+            public abstract MyIniValue Get(string key);
+            public abstract List<string> GetKeys();
+            public abstract void Save(IMyTerminalBlock block);
+            public abstract void Save();
+            public abstract void Set(string key, string value);
+            public abstract void SetComment(string key, string comment);
+            public abstract string GetComment(string key);
+
+            public abstract bool IsReadOnly();
+            public abstract bool Get(string key, bool defaultvalue);
+            public abstract float Get(string key, float defaultvalue);
+            public abstract int Get(string key, int defaultvalue);
+            public abstract string Get(string key, string defaultvalue);
+
+            public virtual ConfigSectionKey Key(string key) => new ConfigSectionKey(this, key);
+            public virtual void Default(string key, string value)
+            {
+                if (!ContainsKey(key))
+                    Set(key, value);
+            }
+            public virtual void Default(string key, bool value) => Default(key, value.ToString());
+            public virtual void Default(string key, float value) => Default(key, value.ToString());
+            public virtual void Default(string key, int value) => Default(key, value.ToString());
+            public virtual void Get(string key, ref bool value) => value = Get(key, value);
+            public virtual void Get(string key, ref float value) => value = Get(key, value);
+            public virtual void Get(string key, ref int value) => value = Get(key, value);
+            public virtual void Get(string key, ref string value) => value = Get(key, value);
+            public virtual bool GetBool(string key) => Get(key).ToBoolean();
+            public virtual float GetFloat(string key) => Get(key).ToSingle();
+            public virtual int GetInt(string key) => Get(key).ToInt32();
+            public virtual string GetString(string key) => Get(key).ToString();
+            public virtual void Set(string key, bool value) => Set(key, value.ToString());
+            public virtual void Set(string key, float value) => Set(key, value.ToString());
+            public virtual void Set(string key, int value) => Set(key, value.ToString());
+        }
+
+        public abstract class RWConfigSection : AConfigSection
+        {
+            public override bool IsReadOnly() => false;
+
+            public override bool Get(string key, bool defaultvalue)
+            {
+                Default(key, defaultvalue);
+                return GetBool(key);
+            }
+            public override float Get(string key, float defaultvalue)
+            {
+                Default(key, defaultvalue);
+                return GetFloat(key);
+            }
+            public override int Get(string key, int defaultvalue)
+            {
+                Default(key, defaultvalue);
+                return GetInt(key);
+            }
+            public override string Get(string key, string defaultvalue)
+            {
+                Default(key, defaultvalue);
+                return GetString(key);
+            }
+        }
+
+        public abstract class ROConfigSection : AConfigSection
+        {
+            public override bool IsReadOnly() => true;
+
+            public override bool Get(string key, bool defaultvalue)
+            {
+                if (!ContainsKey(key))
+                    return defaultvalue;
+                return GetBool(key);
+            }
+            public override float Get(string key, float defaultvalue)
+            {
+                if (!ContainsKey(key))
+                    return defaultvalue;
+                return GetFloat(key);
+            }
+            public override int Get(string key, int defaultvalue)
+            {
+                if (!ContainsKey(key))
+                    return defaultvalue;
+                return GetInt(key);
+            }
+            public override string Get(string key, string defaultvalue)
+            {
+                if (!ContainsKey(key))
+                    return defaultvalue;
+                return GetString(key);
+            }
+
+            public override void Delete(string key)
+            {
+                throw new Exception("Attempt to delete a key from a read-only section");
+            }
+            public override void Set(string key, string value)
+            {
+                throw new Exception("Attempt to set read-only config");
+            }
+            public override void SetComment(string key, string comment)
+            {
+                throw new Exception("Attempt to set read-only config");
+            }
+            public override void Save(IMyTerminalBlock block) { }
+            public override void Save() { }
+
+        }
+
+        public class DictConfigSection : ROConfigSection
         {
             protected readonly IDictionary<string, string> dict;
 
+            public DictConfigSection()
+            {
+                dict = new Dictionary<string, string>();
+            }
             public DictConfigSection(IDictionary<string, string> config)
             {
                 dict = config;
@@ -156,69 +272,22 @@ namespace IngameScript
                 dict = d;
             }
 
-            public bool IsReadOnly() => true;
-            public bool ContainsKey(string key) => dict.ContainsKey(key);
-            public void Default(string key, bool value) => Get(key, value);
-            public void Default(string key, float value) => Get(key, value);
-            public void Default(string key, int value) => Get(key, value);
-            public void Default(string key, string value) => Get(key, value);
-            public void Delete(string key)
-            {
-                throw new Exception("Attempt to delete a key from a read-only section");
-            }
+            public override bool ContainsKey(string key) => dict.ContainsKey(key);
 
-            public MyIniValue Get(string key)
+            public override MyIniValue Get(string key)
             {
                 MyIniKey myIniKey = new MyIniKey("(readonly)", key);
                 return new MyIniValue(myIniKey, GetString(key));
             }
-            public bool Get(string key, bool defaultvalue) => bool.Parse(Get(key, defaultvalue.ToString()));
-            public float Get(string key, float defaultvalue) => float.Parse(Get(key, defaultvalue.ToString()));
-            public int Get(string key, int defaultvalue) => int.Parse(Get(key, defaultvalue.ToString()));
-            public void Get(string key, ref bool value) => value = Get(key, value);
-            public void Get(string key, ref float value) => value = Get(key, value);
-            public void Get(string key, ref int value) => value = Get(key, value);
-            public void Get(string key, ref string value) => value = Get(key, value);
-            public string Get(string key, string defaultvalue)
-            {
-                if (ContainsKey(key))
-                    return key;
-                else
-                    return defaultvalue;
-            }
-            public bool GetBool(string key) => bool.Parse(GetString(key));
-            public string GetComment(string key) => null;
-            public float GetFloat(string key) => float.Parse(GetString(key));
-            public int GetInt(string key) => int.Parse(GetString(key));
-            public List<string> GetKeys() => new List<string>(dict.Keys);
-            public string GetString(string key) => dict[key];
-            public ConfigSectionKey Key(string key) => new ConfigSectionKey(this, key);
-            public void Save() { }
-            public void Save(IMyTerminalBlock block) { }
-            public void Set(string key, bool value)
-            {
-                throw new Exception("Attempt to set read-only config");
-            }
-            public void Set(string key, float value)
-            {
-                throw new Exception("Attempt to set read-only config");
-            }
-            public void Set(string key, int value)
-            {
-                throw new Exception("Attempt to set read-only config");
-            }
-            public void Set(string key, string value)
-            {
-                throw new Exception("Attempt to set read-only config");
-            }
-            public void SetComment(string key, string comment)
-            {
-                throw new Exception("Attempt to set read-only config");
-            }
 
+            public override string GetComment(string key) => null;
+
+            public override List<string> GetKeys() => new List<string>(dict.Keys);
+
+            public override ConfigSectionKey Key(string key) => new ConfigSectionKey(this, key);
         }
 
-        public class LayeredConfigSection : IConfigSection
+        public class LayeredConfigSection : RWConfigSection
         {
             public class AccessConfigSection
             {
@@ -235,7 +304,7 @@ namespace IngameScript
             protected readonly List<AccessConfigSection> accessConfigSections;
             protected List<IConfigSection> configSections => accessConfigSections.ConvertAll(a => a.configSection);
 
-            public bool IsReadOnly() => !accessConfigSections.Any(b => b.writable);
+            public override bool IsReadOnly() => !accessConfigSections.Any(b => b.writable);
 
             public LayeredConfigSection()
             {
@@ -254,7 +323,7 @@ namespace IngameScript
             protected IConfigSection FirstWritable() => accessConfigSections.FindAll(a => a.writable).First().configSection;
             protected IConfigSection FirstWithKey(string key) => accessConfigSections.FindAll(a => a.configSection.ContainsKey(key)).First().configSection;
 
-            public bool ContainsKey(string key)
+            public override bool ContainsKey(string key)
             {
                 foreach (IConfigSection configSection in configSections)
                 {
@@ -264,68 +333,43 @@ namespace IngameScript
                 return false;
             }
 
-            public void Default(string key, bool value)
+            public override void Default(string key, bool value)
             {
                 if (!ContainsKey(key))
                     FirstWritable().Default(key, value);
             }
-            public void Default(string key, float value)
+            public override void Default(string key, float value)
             {
                 if (!ContainsKey(key))
                     FirstWritable().Default(key, value);
             }
-            public void Default(string key, int value)
+            public override void Default(string key, int value)
             {
                 if (!ContainsKey(key))
                     FirstWritable().Default(key, value);
             }
-            public void Default(string key, string value)
+            public override void Default(string key, string value)
             {
                 if (!ContainsKey(key))
                     FirstWritable().Default(key, value);
             }
 
-            public void Delete(string key)
+            public override void Delete(string key)
             {
                 if (accessConfigSections.Any(a => !a.writable && a.configSection.ContainsKey(key)))
                     throw new Exception("Unable to remove key from read-only layers");
                 accessConfigSections.FindAll(a => a.writable && a.configSection.ContainsKey(key)).ForEach(a => a.configSection.Delete(key));
             }
 
-            public MyIniValue Get(string key) => FirstWithKey(key).Get(key);
-            public bool Get(string key, bool defaultvalue)
-            {
-                Default(key, defaultvalue);
-                return FirstWithKey(key).GetBool(key);
-            }
-            public float Get(string key, float defaultvalue)
-            {
-                Default(key, defaultvalue);
-                return FirstWithKey(key).GetFloat(key);
-            }
-            public int Get(string key, int defaultvalue)
-            {
-                Default(key, defaultvalue);
-                return FirstWithKey(key).GetInt(key);
-            }
-            public string Get(string key, string defaultvalue)
-            {
-                Default(key, defaultvalue);
-                return FirstWithKey(key).GetString(key);
-            }
+            public override MyIniValue Get(string key) => FirstWithKey(key).Get(key);
 
-            public void Get(string key, ref bool value) => value = Get(key, value);
-            public void Get(string key, ref float value) => value = Get(key, value);
-            public void Get(string key, ref int value) => value = Get(key, value);
-            public void Get(string key, ref string value) => value = Get(key, value);
+            public override bool GetBool(string key) => FirstWithKey(key).GetBool(key);
+            public override string GetComment(string key) => FirstWithKey(key).GetComment(key);
+            public override float GetFloat(string key) => FirstWithKey(key).GetFloat(key);
+            public override int GetInt(string key) => FirstWithKey(key).GetInt(key);
+            public override string GetString(string key) => FirstWithKey(key).GetString(key);
 
-            public bool GetBool(string key) => FirstWithKey(key).GetBool(key);
-            public string GetComment(string key) => FirstWithKey(key).GetComment(key);
-            public float GetFloat(string key) => FirstWithKey(key).GetFloat(key);
-            public int GetInt(string key) => FirstWithKey(key).GetInt(key);
-            public string GetString(string key) => FirstWithKey(key).GetString(key);
-
-            public List<string> GetKeys()
+            public override List<string> GetKeys()
             {
                 ISet<string> results = new HashSet<string>();
                 foreach (IConfigSection configSection in configSections)
@@ -336,17 +380,15 @@ namespace IngameScript
                 return results.ToList();
             }
 
-            public ConfigSectionKey Key(string key) => new ConfigSectionKey(this, key);
+            public override void Save() => accessConfigSections.FindAll(a => a.writable).ForEach(a => a.configSection.Save());
+            public override void Save(IMyTerminalBlock block) => accessConfigSections.FindAll(a => a.writable).ForEach(a => a.configSection.Save(block));
 
-            public void Save() => accessConfigSections.FindAll(a => a.writable).ForEach(a => a.configSection.Save());
-            public void Save(IMyTerminalBlock block) => accessConfigSections.FindAll(a => a.writable).ForEach(a => a.configSection.Save(block));
+            public override void Set(string key, bool value) => FirstWritable().Set(key, value);
+            public override void Set(string key, float value) => FirstWritable().Set(key, value);
+            public override void Set(string key, int value) => FirstWritable().Set(key, value);
+            public override void Set(string key, string value) => FirstWritable().Set(key, value);
 
-            public void Set(string key, bool value) => FirstWritable().Set(key, value);
-            public void Set(string key, float value) => FirstWritable().Set(key, value);
-            public void Set(string key, int value) => FirstWritable().Set(key, value);
-            public void Set(string key, string value) => FirstWritable().Set(key, value);
-
-            public void SetComment(string key, string comment) => accessConfigSections.FindAll(a => a.writable && a.configSection.ContainsKey(key)).ForEach(a => a.configSection.SetComment(key, comment));
+            public override void SetComment(string key, string comment) => accessConfigSections.FindAll(a => a.writable && a.configSection.ContainsKey(key)).ForEach(a => a.configSection.SetComment(key, comment));
         }
 
         public abstract class BaseConfigSection : IConfigSection
@@ -363,36 +405,74 @@ namespace IngameScript
             public abstract void ApplyDefaults();
 
             // IConfigSection interface:
-            public bool ContainsKey(string key) => section.ContainsKey(key);
-            public void Default(string key, bool value) => section.Default(key, value);
-            public void Default(string key, float value) => section.Default(key, value);
-            public void Default(string key, int value) => section.Default(key, value);
-            public void Default(string key, string value) => section.Default(key, value);
-            public void Delete(string key) => section.Delete(key);
-            public MyIniValue Get(string key) => section.Get(key);
-            public bool Get(string key, bool defaultvalue) => section.Get(key, defaultvalue);
-            public float Get(string key, float defaultvalue) => section.Get(key, defaultvalue);
-            public int Get(string key, int defaultvalue) => section.Get(key, defaultvalue);
-            public void Get(string key, ref bool value) => section.Get(key, ref value);
-            public void Get(string key, ref float value) => section.Get(key, ref value);
-            public void Get(string key, ref int value) => section.Get(key, ref value);
-            public void Get(string key, ref string value) => section.Get(key, ref value);
-            public string Get(string key, string defaultvalue) => section.Get(key, defaultvalue);
-            public bool GetBool(string key) => section.GetBool(key);
-            public string GetComment(string key) => section.GetComment(key);
-            public float GetFloat(string key) => section.GetFloat(key);
-            public int GetInt(string key) => section.GetInt(key);
-            public List<string> GetKeys() => section.GetKeys();
-            public string GetString(string key) => section.GetString(key);
-            public bool IsReadOnly() => section.IsReadOnly();
-            public ConfigSectionKey Key(string key) => section.Key(key);
-            public void Save() => section.Save();
-            public void Save(IMyTerminalBlock block) => section.Save(block);
-            public void Set(string key, bool value) => section.Set(key, value);
-            public void Set(string key, float value) => section.Set(key, value);
-            public void Set(string key, int value) => section.Set(key, value);
-            public void Set(string key, string value) => section.Set(key, value);
-            public void SetComment(string key, string comment) => section.SetComment(key, comment);
+            public virtual bool ContainsKey(string key) => section.ContainsKey(key);
+            public virtual void Default(string key, bool value) => section.Default(key, value);
+            public virtual void Default(string key, float value) => section.Default(key, value);
+            public virtual void Default(string key, int value) => section.Default(key, value);
+            public virtual void Default(string key, string value) => section.Default(key, value);
+            public virtual void Delete(string key) => section.Delete(key);
+            public virtual MyIniValue Get(string key) => section.Get(key);
+            public virtual bool Get(string key, bool defaultvalue) => section.Get(key, defaultvalue);
+            public virtual float Get(string key, float defaultvalue) => section.Get(key, defaultvalue);
+            public virtual int Get(string key, int defaultvalue) => section.Get(key, defaultvalue);
+            public virtual void Get(string key, ref bool value) => section.Get(key, ref value);
+            public virtual void Get(string key, ref float value) => section.Get(key, ref value);
+            public virtual void Get(string key, ref int value) => section.Get(key, ref value);
+            public virtual void Get(string key, ref string value) => section.Get(key, ref value);
+            public virtual string Get(string key, string defaultvalue) => section.Get(key, defaultvalue);
+            public virtual bool GetBool(string key) => section.GetBool(key);
+            public virtual string GetComment(string key) => section.GetComment(key);
+            public virtual float GetFloat(string key) => section.GetFloat(key);
+            public virtual int GetInt(string key) => section.GetInt(key);
+            public virtual List<string> GetKeys() => section.GetKeys();
+            public virtual string GetString(string key) => section.GetString(key);
+            public virtual bool IsReadOnly() => section.IsReadOnly();
+            public virtual ConfigSectionKey Key(string key) => section.Key(key);
+            public virtual void Save() => section.Save();
+            public virtual void Save(IMyTerminalBlock block) => section.Save(block);
+            public virtual void Set(string key, bool value) => section.Set(key, value);
+            public virtual void Set(string key, float value) => section.Set(key, value);
+            public virtual void Set(string key, int value) => section.Set(key, value);
+            public virtual void Set(string key, string value) => section.Set(key, value);
+            public virtual void SetComment(string key, string comment) => section.SetComment(key, comment);
+        }
+
+        public abstract class KeyPrefixConfigSection : BaseConfigSection
+        {
+            private readonly string prefix;
+            public KeyPrefixConfigSection(string prefix, IConfigSection configSection) : base(configSection) { this.prefix = prefix; }
+            public KeyPrefixConfigSection(string prefix, IMyProgrammableBlock Me, string SectionName) : base(Me, SectionName) { this.prefix = prefix; }
+
+            // All of these just call the base with the prefix prepended to the key:
+            public override bool ContainsKey(string key) => base.ContainsKey(prefix + key);
+            public override void Default(string key, bool value) => base.Default(prefix + key, value);
+            public override void Default(string key, float value) => base.Default(prefix + key, value);
+            public override void Default(string key, int value) => base.Default(prefix + key, value);
+            public override void Default(string key, string value) => base.Default(prefix + key, value);
+            public override void Delete(string key) => base.Delete(prefix + key);
+            public override MyIniValue Get(string key) => base.Get(prefix + key);
+            public override bool Get(string key, bool defaultvalue) => base.Get(prefix + key, defaultvalue);
+            public override float Get(string key, float defaultvalue) => base.Get(prefix + key, defaultvalue);
+            public override int Get(string key, int defaultvalue) => base.Get(prefix + key, defaultvalue);
+            public override void Get(string key, ref bool value) => base.Get(prefix + key, ref value);
+            public override void Get(string key, ref float value) => base.Get(prefix + key, ref value);
+            public override void Get(string key, ref int value) => base.Get(prefix + key, ref value);
+            public override void Get(string key, ref string value) => base.Get(prefix + key, ref value);
+            public override string Get(string key, string defaultvalue) => base.Get(prefix + key, defaultvalue);
+            public override bool GetBool(string key) => base.GetBool(prefix + key);
+            public override string GetComment(string key) => base.GetComment(prefix + key);
+            public override float GetFloat(string key) => base.GetFloat(prefix + key);
+            public override int GetInt(string key) => base.GetInt(prefix + key);
+            public override string GetString(string key) => base.GetString(prefix + key);
+            public override ConfigSectionKey Key(string key) => base.Key(key);
+            public override void Set(string key, bool value) => base.Set(prefix + key, value);
+            public override void Set(string key, float value) => base.Set(prefix + key, value);
+            public override void Set(string key, int value) => base.Set(prefix + key, value);
+            public override void Set(string key, string value) => base.Set(prefix + key, value);
+            public override void SetComment(string key, string comment) => base.SetComment(prefix + key, comment);
+
+            // This only returns keys which start with the prefix and then strips the prefix off:
+            public override List<string> GetKeys() => base.GetKeys().FindAll(s => s.StartsWith(prefix)).ConvertAll(s => s.Remove(0, prefix.Length));
         }
     }
 }
