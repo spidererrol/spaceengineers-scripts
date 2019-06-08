@@ -247,7 +247,7 @@ namespace IngameScript
             if (first < second)
                 first = second;
         }
-        public static SideStates Convert(IMyShipConnector connector)
+        public static SideStates ConvertToSideStates(IMyShipConnector connector)
         {
             switch (connector.Status)
             {
@@ -260,7 +260,7 @@ namespace IngameScript
             }
             throw new Exception("Out Of Cheese Error");
         }
-        public static SideStates Convert(IMyLandingGear gear)
+        public static SideStates ConvertToSideStates(IMyLandingGear gear)
         {
             switch (gear.LockMode)
             {
@@ -276,8 +276,8 @@ namespace IngameScript
             throw new Exception("Out Of Cheese Error");
         }
 
-        void Best(ref SideStates first, IMyShipConnector second) => Best(ref first, Convert(second));
-        void Best(ref SideStates first, IMyLandingGear second) => Best(ref first, Convert(second));
+        void Best(ref SideStates first, IMyShipConnector second) => Best(ref first, ConvertToSideStates(second));
+        void Best(ref SideStates first, IMyLandingGear second) => Best(ref first, ConvertToSideStates(second));
 
         Color Col(SideStates state)
         {
