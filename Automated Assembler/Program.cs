@@ -659,7 +659,7 @@ namespace IngameScript
         //    assembler.SetValue<List<KeyValuePair<string, int>>>("Queue", newQueue);
         //}
 
-        string currentitem = "";
+        //string currentitem = "";
 
         string SimplifyComponent(string key)
         {
