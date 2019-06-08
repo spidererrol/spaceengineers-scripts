@@ -109,7 +109,7 @@ namespace IngameScript
             public string message;
             public int created;
             public int age;
-            public int timeout => created + age;
+            public int Timeout => created + age;
             public StickMsg(string msg, int now, int maxage)
             {
                 message = msg;
@@ -142,7 +142,7 @@ namespace IngameScript
             foreach (string id in keys)
             {
                 StickMsg stickMsg = stickies[id];
-                if (stickMsg.timeout < unixTimestamp)
+                if (stickMsg.Timeout < unixTimestamp)
                     stickies.Remove(id);
                 else
                     Emit(stickMsg.message);
