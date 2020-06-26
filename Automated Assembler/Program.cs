@@ -21,7 +21,7 @@ namespace IngameScript
     partial class Program : MyGridProgram
     {
         // AutomatedAssembler.cs
-        // Automated Assembler v2.2
+        // Automated Assembler v2.4
         #region mdk macros
         // Deployed: $MDK_DATETIME$
         #endregion mdk macros
@@ -60,8 +60,8 @@ namespace IngameScript
             { "metalgrid","MyObjectBuilder_BlueprintDefinition/MetalGrid" },
             { "missile200mm","MyObjectBuilder_BlueprintDefinition/Missile200mm" },
             { "motor","MyObjectBuilder_BlueprintDefinition/MotorComponent" },
-            { "nato_25x184mmmagazine","MyObjectBuilder_BlueprintDefinition/NATO_25x184mmMagazine" },
-            { "nato_5p56x45mmmagazine","MyObjectBuilder_BlueprintDefinition/NATO_5p56x45mmMagazine" },
+            { "nato_25x184mm","MyObjectBuilder_BlueprintDefinition/NATO_25x184mmMagazine" },
+            { "nato_5p56x45mm","MyObjectBuilder_BlueprintDefinition/NATO_5p56x45mmMagazine" },
             { "parachute","MyObjectBuilder_BlueprintDefinition/Parachute" },
             { "powercell","MyObjectBuilder_BlueprintDefinition/PowerCell" },
             { "productioncontrol","MyObjectBuilder_BlueprintDefinition/productioncontrolcomponent" },
@@ -387,6 +387,7 @@ namespace IngameScript
         }
 
         private bool addlearned = true;
+        private bool thisgrid = false;
 
         void ReadCommands(string commandstext)
         {
@@ -412,6 +413,9 @@ namespace IngameScript
                     case "":
                         // Ignore blank lines.
                         break;
+                    case "thisgrid":
+                        thisgrid = true;
+                        break;
                     case "addlearned":
                         addlearned = true;
                         break;
@@ -424,6 +428,9 @@ namespace IngameScript
                     case "no":
                         switch (command[1].ToLower())
                         {
+                            case "thisgrid":
+                                thisgrid = false;
+                                break;
                             case "addlearned":
                                 addlearned = false;
                                 break;
@@ -852,8 +859,17 @@ namespace IngameScript
             Dictionary<string, double> stock = new Dictionary<string, double>();
             Dictionary<string, double> istock = new Dictionary<string, double>();
 
-            Debug("Get all blocks");
-            IList<IMyTerminalBlock> allblocks = GetBlocks.Everything;
+            IList<IMyTerminalBlock> allblocks;
+            if (thisgrid)
+            {
+                Debug("Get blocks on this grid");
+                allblocks = GetBlocks.EverythingThisGrid;
+            }
+            else
+            {
+                Debug("Get all blocks");
+                allblocks = GetBlocks.Everything;
+            }
 
             Debug("Iterate all blocks");
             foreach (IMyTerminalBlock block in allblocks)
@@ -868,15 +884,19 @@ namespace IngameScript
                     {
                         string mainType = thing.Type.TypeId.ToString();
                         mainType = mainType.Substring(mainType.LastIndexOf('_') + 1);
-                        if (mainType != "Component" && mainType != "Ingot")
+                        if (mainType != "Component" && mainType != "Ingot" && mainType != "AmmoMagazine")
                             continue;
                         string subType = thing.Type.SubtypeId.ToString();
                         double amount = (double)thing.Amount;
                         //Debug("(" + subType + ")");
-                        if (mainType == "Component")
+                        if (mainType == "Component" || mainType == "AmmoMagazine")
                         {
                             //if (!block.CustomName.Contains("[STOCK]"))
                             //    continue;
+                            if (!item2definition.ContainsKey(subType.ToLower()))
+                            {
+                                Debug("New Component [" + mainType + "] : " + subType);
+                            }
                             if (stock.ContainsKey(subType))
                             {
                                 stock[subType] += amount;

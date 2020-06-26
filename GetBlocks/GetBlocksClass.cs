@@ -76,6 +76,13 @@ namespace IngameScript
                 return blocks;
             }
 
+            public List<IMyTerminalBlock> GetAllThisGrid()
+            {
+                List<IMyTerminalBlock> hits = new List<IMyTerminalBlock>();
+                GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(hits, myGridOnly);
+                return hits;
+            }
+
             private delegate object cacheGetter(string cacheid);
             private IType Cached<IType>(string cacheid, cacheGetter get)
             {
@@ -86,6 +93,7 @@ namespace IngameScript
             private IList<IType> CachedList<IType>(string cacheid, cacheGetter get) => Cached<List<IType>>(cacheid, get);
 
             public IList<IMyTerminalBlock> Everything => CachedList<IMyTerminalBlock>("Everything", id => GetAllBlocks());
+            public IList<IMyTerminalBlock> EverythingThisGrid => CachedList<IMyTerminalBlock>("EverythingThisGrid", id => GetAllThisGrid());
 
             public List<IType> ByType<IType>(bool thisgrid = true) where IType : IMyTerminalBlock => ByType<IType>(UseMyGridFilter(thisgrid));
             public List<IType> ByType<IType>(BlockFilter blockFilter) where IType : IMyTerminalBlock
