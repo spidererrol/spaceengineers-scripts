@@ -25,24 +25,232 @@ namespace IngameScript
         const string ReleaseDate = "$MDK_DATETIME$";
         #endregion mdk macros
 
-        /// <summary>
-        /// Section name to use when reading config from Custom Data.
-        /// </summary>
-        public const string SectionName = "EDC";
+        public class MainConfig : BaseConfigSection
+        {
+            public override void ApplyDefaults()
+            {
+                Default("OpenSeconds", 11);
+                Default("Prefix", "[#");
+                Default("Suffix", "]");
+                Default("ConsoleTo", "##EDC##");
+                Default("ConfigSection", "EDC");
+                Default("Echo", true);
+                Default("Self", true);
+            }
+            public MainConfig(IMyProgrammableBlock Me, string SectionName = "EDC") : base(Me, SectionName) { }
 
-        /// <summary>
-        /// How many seconds to leave a door open when a user has opened it?
-        /// </summary>
-        /// <remarks>
-        /// This can now be updated via the "Custom Data" configuration.
-        /// </remarks>
-        public int OpenSeconds = 11;
+            public int OpenSeconds => GetInt("OpenSeconds");
+            public string Prefix => GetString("Prefix");
+            public string Suffix => GetString("Suffix");
+            public string ConsoleTo => GetString("ConsoleTo");
+            public string ConfigSection => GetString("ConfigSection");
+            public bool Echo => GetBool("Echo");
+            public bool Self => GetBool("Self");
+            public string SealConfigSection => Get("SealConfigSection", ConfigSection + "#Seal");
+            public string LeakConfigSection => Get("LeakConfigSection", ConfigSection + "#Leak");
+        }
+        public MainConfig config;
 
-        Dictionary<string, int> rooms = new Dictionary<string, int>();
-        Dictionary<Vector3I, DoorStatus> doorState = new Dictionary<Vector3I, DoorStatus>();
-        Dictionary<Vector3I, TimeSpan> doorToClose = new Dictionary<Vector3I, TimeSpan>();
+        public class BlockConfig : KeyPrefixConfigSection
+        {
+            public static string StatePrefix(RoomState state)
+            {
+                switch (state)
+                {
+                    case RoomState.LEAKING:
+                        return "Leak";
+                    case RoomState.SEALED:
+                        return "Seal";
+                    default:
+                        return "Missing";
+                }
+            }
+
+            public BlockConfig(RoomState state, IConfigSection section) : base(StatePrefix(state), section) { }
+
+            public string Action => GetString("Action");
+            public bool ActionBeforeProperties => GetBool("ActionBeforeProperties");
+            public IEnumerable<KeyValuePair<string, MyIniValue>> Properties => GetKeys().Select(f => new KeyValuePair<string, MyIniValue>(f, Get(f)));
+
+            public override void ApplyDefaults() { }
+
+        }
+
+        public enum RoomState
+        {
+            MISSING,
+            LEAKING,
+            SEALED,
+        };
+        public class RoomsStates
+        {
+            public class StateChanged
+            {
+                public readonly RoomState state;
+                public readonly bool changed;
+                public StateChanged(RoomState roomState, bool ischanged)
+                {
+                    state = roomState;
+                    changed = ischanged;
+                }
+            }
+
+            private IDictionary<string, RoomState> oldStates;
+            private IDictionary<string, RoomState> newStates;
+            private ISet<string> changed;
+
+            public int Count
+            {
+                get
+                {
+                    if (newStates == null && oldStates == null)
+                        return 0;
+                    if (newStates != null && oldStates == null)
+                        return newStates.Count;
+                    if (newStates == null && oldStates != null)
+                        return oldStates.Count;
+                    ISet<string> keys = new HashSet<string>();
+                    foreach (string roomname in oldStates.Keys)
+                    {
+                        keys.Add(roomname);
+                    }
+                    foreach (string roomname in newStates.Keys)
+                    {
+                        keys.Add(roomname);
+                    }
+                    return keys.Count;
+                }
+            }
+
+            public IList<KeyValuePair<string, RoomState>> ChangedRooms => CalcChanged();
+
+            public IList<KeyValuePair<string, RoomState>> CalcChanged()
+            {
+                if (changed != null)
+                    return newStates.ToList();
+                changed = new HashSet<string>();
+                List<string> newNames = newStates.Keys.ToList();
+                foreach (string rname in newNames)
+                {
+                    if (oldStates.ContainsKey(rname))
+                        if (oldStates[rname] == newStates[rname])
+                            newStates.Remove(rname);
+                        else
+                            changed.Add(rname);
+                    else
+                        changed.Add(rname);
+                }
+                return newStates.ToList();
+            }
+
+            public StateChanged FinalState(IEnumerable<string> roomnames, bool missingSealed = true)
+            {
+                bool changed = roomnames.Any(rn => newStates.ContainsKey(rn));
+                foreach (string roomname in roomnames)
+                {
+                    if (newStates.ContainsKey(roomname))
+                    {
+                        if (newStates[roomname] == RoomState.LEAKING)
+                            return new StateChanged(RoomState.LEAKING, changed);
+                    }
+                    else if (oldStates.ContainsKey(roomname))
+                    {
+                        if (oldStates[roomname] == RoomState.LEAKING)
+                            return new StateChanged(RoomState.LEAKING, changed);
+                    }
+                    else if (!missingSealed)
+                        return new StateChanged(RoomState.MISSING, changed);
+                }
+                return new StateChanged(RoomState.SEALED, changed);
+            }
+
+            public RoomsStates()
+            {
+                newStates = new Dictionary<string, RoomState>();
+            }
+
+            private void Clean()
+            {
+                if (oldStates == null)
+                {
+                    oldStates = newStates;
+                }
+                else
+                {
+                    foreach (KeyValuePair<string, RoomState> rs in newStates)
+                    {
+                        oldStates[rs.Key] = rs.Value;
+                    }
+                }
+                newStates = new Dictionary<string, RoomState>();
+                changed = null;
+            }
+            public void Start() => Clean();
+            public void Finish() => Clean();
+            public void Sealed(string roomname)
+            {
+                if (!newStates.ContainsKey(roomname))
+                    newStates.Add(roomname, RoomState.SEALED);
+            }
+            public void Leaking(string roomname)
+            {
+                if (newStates.ContainsKey(roomname))
+                    newStates[roomname] = RoomState.LEAKING;
+                else
+                    newStates.Add(roomname, RoomState.LEAKING);
+            }
+        }
+        public RoomsStates roomsStates = new RoomsStates();
+
+        public class Todo
+        {
+            public string name;
+            public string value;
+            public TimeSpan deferUntil;
+
+            public Todo(string name, string value, TimeSpan deferUntil)
+            {
+                this.name = name;
+                this.value = value;
+                this.deferUntil = deferUntil;
+            }
+            public Todo(string name, string value, int seconds) : this(name, value, TimeSpan.FromSeconds(seconds)) { }
+
+            public void Apply(IMyTerminalBlock b)
+            {
+                if (value == null)
+                {
+                    b.ApplyAction(name);
+                }
+                else
+                {
+                    string type = b.GetProperty(name).TypeName;
+                    switch (type)
+                    {
+                        case "bool":
+                            b.SetValueBool(name, bool.Parse(value));
+                            break;
+                        case "float":
+                            b.SetValueFloat(name, float.Parse(value));
+                            break;
+                        case "color":
+                            b.SetValueColor(name, Utility.WebColor(value));
+                            break;
+                        default:
+                            b.SetValue<string>(name, value);
+                            break;
+                    }
+                }
+            }
+        }
+
+        //Dictionary<Vector3I, DoorStatus> doorState = new Dictionary<Vector3I, DoorStatus>();
+        //Dictionary<Vector3I, TimeSpan> doorToClose = new Dictionary<Vector3I, TimeSpan>();
+        Dictionary<Vector3I, ISet<Todo>> pendingTasks = new Dictionary<Vector3I, ISet<Todo>>();
 
         public TimeSpan ticker = TimeSpan.FromSeconds(0);
+
+        public Todo CreateTodo(string name, string value = null) => new Todo(name, value, ticker + TimeSpan.FromSeconds(config.OpenSeconds));
 
         public Program()
         {
@@ -60,306 +268,8 @@ namespace IngameScript
             console.Echo(msg);
         }
 
-
-        System.Text.RegularExpressions.Regex reWebColor = new System.Text.RegularExpressions.Regex(@"^#?([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$");
-
-        public Color webColor(string col)
-        {
-            switch (col.ToLower())
-            {
-                case "aliceblue":
-                    return Color.AliceBlue;
-                case "antiquewhite":
-                    return Color.AntiqueWhite;
-                case "aqua":
-                    return Color.Aqua;
-                case "aquamarine":
-                    return Color.Aquamarine;
-                case "azure":
-                    return Color.Azure;
-                case "beige":
-                    return Color.Beige;
-                case "bisque":
-                    return Color.Bisque;
-                case "black":
-                    return Color.Black;
-                case "blanchedalmond":
-                    return Color.BlanchedAlmond;
-                case "blue":
-                    return Color.Blue;
-                case "blueviolet":
-                    return Color.BlueViolet;
-                case "brown":
-                    return Color.Brown;
-                case "burlywood":
-                    return Color.BurlyWood;
-                case "cadetblue":
-                    return Color.CadetBlue;
-                case "chartreuse":
-                    return Color.Chartreuse;
-                case "chocolate":
-                    return Color.Chocolate;
-                case "coral":
-                    return Color.Coral;
-                case "cornflowerblue":
-                    return Color.CornflowerBlue;
-                case "cornsilk":
-                    return Color.Cornsilk;
-                case "crimson":
-                    return Color.Crimson;
-                case "cyan":
-                    return Color.Cyan;
-                case "darkblue":
-                    return Color.DarkBlue;
-                case "darkcyan":
-                    return Color.DarkCyan;
-                case "darkgoldenrod":
-                    return Color.DarkGoldenrod;
-                case "darkgray":
-                    return Color.DarkGray;
-                case "darkgreen":
-                    return Color.DarkGreen;
-                case "darkkhaki":
-                    return Color.DarkKhaki;
-                case "darkmagenta":
-                    return Color.DarkMagenta;
-                case "darkolivegreen":
-                    return Color.DarkOliveGreen;
-                case "darkorange":
-                    return Color.DarkOrange;
-                case "darkorchid":
-                    return Color.DarkOrchid;
-                case "darkred":
-                    return Color.DarkRed;
-                case "darksalmon":
-                    return Color.DarkSalmon;
-                case "darkseagreen":
-                    return Color.DarkSeaGreen;
-                case "darkslateblue":
-                    return Color.DarkSlateBlue;
-                case "darkslategray":
-                    return Color.DarkSlateGray;
-                case "darkturquoise":
-                    return Color.DarkTurquoise;
-                case "darkviolet":
-                    return Color.DarkViolet;
-                case "deeppink":
-                    return Color.DeepPink;
-                case "deepskyblue":
-                    return Color.DeepSkyBlue;
-                case "dimgray":
-                    return Color.DimGray;
-                case "dodgerblue":
-                    return Color.DodgerBlue;
-                case "firebrick":
-                    return Color.Firebrick;
-                case "floralwhite":
-                    return Color.FloralWhite;
-                case "forestgreen":
-                    return Color.ForestGreen;
-                case "fuchsia":
-                    return Color.Fuchsia;
-                case "gainsboro":
-                    return Color.Gainsboro;
-                case "ghostwhite":
-                    return Color.GhostWhite;
-                case "gold":
-                    return Color.Gold;
-                case "goldenrod":
-                    return Color.Goldenrod;
-                case "gray":
-                    return Color.Gray;
-                case "green":
-                    return Color.Green;
-                case "greenyellow":
-                    return Color.GreenYellow;
-                case "honeydew":
-                    return Color.Honeydew;
-                case "hotpink":
-                    return Color.HotPink;
-                case "indianred":
-                    return Color.IndianRed;
-                case "indigo":
-                    return Color.Indigo;
-                case "ivory":
-                    return Color.Ivory;
-                case "khaki":
-                    return Color.Khaki;
-                case "lavender":
-                    return Color.Lavender;
-                case "lavenderblush":
-                    return Color.LavenderBlush;
-                case "lawngreen":
-                    return Color.LawnGreen;
-                case "lemonchiffon":
-                    return Color.LemonChiffon;
-                case "lightblue":
-                    return Color.LightBlue;
-                case "lightcoral":
-                    return Color.LightCoral;
-                case "lightcyan":
-                    return Color.LightCyan;
-                case "lightgoldenrodyellow":
-                    return Color.LightGoldenrodYellow;
-                case "lightgreen":
-                    return Color.LightGreen;
-                case "lightgray":
-                    return Color.LightGray;
-                case "lightpink":
-                    return Color.LightPink;
-                case "lightsalmon":
-                    return Color.LightSalmon;
-                case "lightseagreen":
-                    return Color.LightSeaGreen;
-                case "lightskyblue":
-                    return Color.LightSkyBlue;
-                case "lightslategray":
-                    return Color.LightSlateGray;
-                case "lightsteelblue":
-                    return Color.LightSteelBlue;
-                case "lightyellow":
-                    return Color.LightYellow;
-                case "lime":
-                    return Color.Lime;
-                case "limegreen":
-                    return Color.LimeGreen;
-                case "linen":
-                    return Color.Linen;
-                case "magenta":
-                    return Color.Magenta;
-                case "maroon":
-                    return Color.Maroon;
-                case "mediumaquamarine":
-                    return Color.MediumAquamarine;
-                case "mediumblue":
-                    return Color.MediumBlue;
-                case "mediumorchid":
-                    return Color.MediumOrchid;
-                case "mediumpurple":
-                    return Color.MediumPurple;
-                case "mediumseagreen":
-                    return Color.MediumSeaGreen;
-                case "mediumslateblue":
-                    return Color.MediumSlateBlue;
-                case "mediumspringgreen":
-                    return Color.MediumSpringGreen;
-                case "mediumturquoise":
-                    return Color.MediumTurquoise;
-                case "mediumvioletred":
-                    return Color.MediumVioletRed;
-                case "midnightblue":
-                    return Color.MidnightBlue;
-                case "mintcream":
-                    return Color.MintCream;
-                case "mistyrose":
-                    return Color.MistyRose;
-                case "moccasin":
-                    return Color.Moccasin;
-                case "navajowhite":
-                    return Color.NavajoWhite;
-                case "navy":
-                    return Color.Navy;
-                case "oldlace":
-                    return Color.OldLace;
-                case "olive":
-                    return Color.Olive;
-                case "olivedrab":
-                    return Color.OliveDrab;
-                case "orange":
-                    return Color.Orange;
-                case "orangered":
-                    return Color.OrangeRed;
-                case "orchid":
-                    return Color.Orchid;
-                case "palegoldenrod":
-                    return Color.PaleGoldenrod;
-                case "palegreen":
-                    return Color.PaleGreen;
-                case "paleturquoise":
-                    return Color.PaleTurquoise;
-                case "palevioletred":
-                    return Color.PaleVioletRed;
-                case "papayawhip":
-                    return Color.PapayaWhip;
-                case "peachpuff":
-                    return Color.PeachPuff;
-                case "peru":
-                    return Color.Peru;
-                case "pink":
-                    return Color.Pink;
-                case "plum":
-                    return Color.Plum;
-                case "powderblue":
-                    return Color.PowderBlue;
-                case "purple":
-                    return Color.Purple;
-                case "red":
-                    return Color.Red;
-                case "rosybrown":
-                    return Color.RosyBrown;
-                case "royalblue":
-                    return Color.RoyalBlue;
-                case "saddlebrown":
-                    return Color.SaddleBrown;
-                case "salmon":
-                    return Color.Salmon;
-                case "sandybrown":
-                    return Color.SandyBrown;
-                case "seagreen":
-                    return Color.SeaGreen;
-                case "seashell":
-                    return Color.SeaShell;
-                case "sienna":
-                    return Color.Sienna;
-                case "silver":
-                    return Color.Silver;
-                case "skyblue":
-                    return Color.SkyBlue;
-                case "slateblue":
-                    return Color.SlateBlue;
-                case "slategray":
-                    return Color.SlateGray;
-                case "snow":
-                    return Color.Snow;
-                case "springgreen":
-                    return Color.SpringGreen;
-                case "steelblue":
-                    return Color.SteelBlue;
-                case "tan":
-                    return Color.Tan;
-                case "teal":
-                    return Color.Teal;
-                case "thistle":
-                    return Color.Thistle;
-                case "tomato":
-                    return Color.Tomato;
-                case "turquoise":
-                    return Color.Turquoise;
-                case "violet":
-                    return Color.Violet;
-                case "wheat":
-                    return Color.Wheat;
-                case "white":
-                    return Color.White;
-                case "whitesmoke":
-                    return Color.WhiteSmoke;
-                case "yellow":
-                    return Color.Yellow;
-                case "yellowgreen":
-                    return Color.YellowGreen;
-            }
-            System.Text.RegularExpressions.MatchCollection matches = reWebColor.Matches(col);
-            foreach (System.Text.RegularExpressions.Match match in matches)
-            {
-                string red = match.Groups[1].Captures[0].Value;
-                string green = match.Groups[2].Captures[0].Value;
-                string blue = match.Groups[3].Captures[0].Value;
-                return new Color(Convert.ToInt32(red, 16), Convert.ToInt32(green, 16), Convert.ToInt32(blue, 16));
-            }
-            return Color.Transparent;
-        }
-
-        public void updateLights(List<IMyInteriorLight> lights, bool isSealed, bool inverted)
+        /*
+        public void UpdateLights(List<IMyInteriorLight> lights, bool isSealed, bool inverted, string roomname)
         {
             if (!lights.Any())
                 return;
@@ -367,7 +277,11 @@ namespace IngameScript
                 isSealed = !isSealed;
             foreach (IMyInteriorLight light in lights)
             {
-                Config.ConfigSection sec = Config.Section(light, SectionName);
+                LayeredConfigSection sec = new LayeredConfigSection().Add(new string[,]
+                {
+                    { "SealedColor", "Off"},
+                    { "LeakColor","On"},
+                }).Add(Config.Section(light, config.ConfigSection)).Add(Config.Section(light, config.ConfigSection + "#" + roomname));
                 string sSealedColor = sec.Get("SealedColor", "Off");
                 string sLeakColor = sec.Get("LeakColor", "On");
                 sec.Save();
@@ -381,7 +295,7 @@ namespace IngameScript
                 else
                 {
                     Utility.RunActions(light, "OnOff_On");
-                    light.Color = webColor(sTargetColor);
+                    light.Color = WebColor(sTargetColor);
                 }
                 foreach (string attrib in new string[] { "BlinkLength", "BlinkIntervalSeconds", "BlinkOffset" })
                 {
@@ -391,21 +305,153 @@ namespace IngameScript
                 }
             }
         }
+        */
+
+        public string RoomTag(string roomname) => config.Prefix + roomname + config.Suffix;
+
+        public List<IMyTerminalBlock> GetRoomBlocks(string roomname) => GetBlocks.ByName<IMyTerminalBlock>(RoomTag(roomname));
+
+        public IEnumerable<string> TaggedRooms(string CustomName)
+        {
+            string sTags = System.Text.RegularExpressions.Regex.Escape(config.Prefix) + @"(.+?)(!?)" + System.Text.RegularExpressions.Regex.Escape(config.Suffix);
+            System.Text.RegularExpressions.Regex reTags = new System.Text.RegularExpressions.Regex(sTags);
+
+            System.Text.RegularExpressions.MatchCollection matches = reTags.Matches(CustomName);
+            foreach (System.Text.RegularExpressions.Match match in matches)
+            {
+                yield return match.Groups[1].Captures[0].Value;
+            }
+        }
+        public IEnumerable<string> TaggedRooms(IMyTerminalBlock b) => TaggedRooms(b.CustomName);
+
+        public static void SetProperty(IMyTerminalBlock b, string propname, MyIniValue value)
+        {
+            ITerminalProperty prop = b.GetProperty(propname);
+            switch (prop.TypeName.ToLower())
+            {
+                case "string":
+                    b.SetValue<string>(propname, value.ToString());
+                    break;
+                case "bool":
+                    b.SetValueBool(propname, value.ToBoolean());
+                    break;
+                case "float":
+                    b.SetValueFloat(propname, value.ToSingle());
+                    break;
+                case "color":
+                    b.SetValueColor(propname, Utility.WebColor(value.ToString()));
+                    break;
+                default:
+                    throw new Exception("I don't know how to set a property of type '" + prop.TypeName + "'");
+            }
+        }
+        public static void SetProperty(IMyTerminalBlock b, KeyValuePair<string, MyIniValue> prop) => SetProperty(b, prop.Key, prop.Value);
+
+        public readonly DictConfigSection baseDoorConfig = new DictConfigSection(new string[,]
+            {
+                { "LeakAction", "Close" },
+                { "SealAction","Open" },
+            });
+        public readonly DictConfigSection baseVentConfig = new DictConfigSection();
+        public readonly DictConfigSection baseDEFAULTConfig = new DictConfigSection(new string[,]
+            {
+                { "LeakAction", "On" },
+                { "SealAction","Off" },
+            });
+        public readonly DictConfigSection baseDoorLeakConfig = new DictConfigSection(new string[,]
+        {
+            { "Monitor","Status=Closed" },
+            { "OnStatus","Close" },
+        });
+        public readonly DictConfigSection baseDEFAULTLeakConfig = new DictConfigSection();
+        public readonly DictConfigSection baseDEFAULTSealConfig = new DictConfigSection();
+
+        public void ProcessBlock(IMyTerminalBlock b)
+        {
+            RoomsStates.StateChanged finalState = roomsStates.FinalState(TaggedRooms(b));
+            if (finalState.changed)
+            {
+                IConfigSection rbc = Config.Section(b, config.ConfigSection);
+                IConfigSection baseconf;
+                if (Utility.IsType<IMyDoor>(b))
+                    baseconf = baseDoorConfig;
+                else if (Utility.IsType<IMyAirVent>(b))
+                    baseconf = baseVentConfig;
+                else
+                    baseconf = baseDEFAULTConfig;
+                BlockConfig bconfig = new BlockConfig(finalState.state, new LayeredConfigSection().Add(baseconf).Add(rbc));
+                if (bconfig.ActionBeforeProperties && bconfig.ContainsKey("Action") && b.HasAction(bconfig.Action))
+                    b.ApplyAction(bconfig.Action);
+                foreach (KeyValuePair<string, MyIniValue> prop in bconfig.Properties)
+                {
+                    SetProperty(b, prop);
+                }
+                if (!bconfig.ActionBeforeProperties && bconfig.ContainsKey("Action") && b.HasAction(bconfig.Action))
+                    b.ApplyAction(bconfig.Action);
+            }
+            else if (finalState.state != RoomState.MISSING)
+            {
+                string configSectionName = finalState.state == RoomState.SEALED ? config.SealConfigSection : config.LeakConfigSection;
+                IConfigSection rbc = Config.Section(b, configSectionName);
+                IConfigSection baseconf;
+                if (Utility.IsType<IMyDoor>(b) && finalState.state == RoomState.LEAKING)
+                    baseconf = baseDoorLeakConfig;
+                else if (finalState.state == RoomState.LEAKING)
+                    baseconf = baseDEFAULTLeakConfig;
+                else
+                    baseconf = baseDEFAULTSealConfig;
+                IConfigSection bconfig = new LayeredConfigSection().Add(baseconf).Add(rbc);
+                if (bconfig.ContainsKey("Monitor") && bconfig.GetString("Monitor").Length > 0)
+                {
+                    IEnumerable monitorList = bconfig.GetString("Monitor").Split(',');
+                    ISet<Todo> todos = new HashSet<Todo>();
+                    foreach (string monitorRule in monitorList)
+                    {
+                        string property = monitorRule.Substring(0, monitorRule.IndexOf('='));
+                        ISet<string> values = new HashSet<string>(monitorRule.Substring(monitorRule.IndexOf('=')).Split('|'));
+                        string curValue = b.GetProperty(property).ToString();
+                        if (!values.Contains(curValue))
+                        {
+                            string todo = bconfig.GetString("Do" + property);
+                            IList<string> commands = todo.Split(',');
+                            foreach (string command in commands)
+                            {
+                                int eq = command.IndexOf('=');
+                                Todo newtodo;
+                                if (eq == -1)
+                                {
+                                    newtodo = CreateTodo(command);
+                                }
+                                else
+                                {
+                                    string prop = command.Substring(0, eq);
+                                    string val = command.Substring(eq);
+                                    newtodo = CreateTodo(prop, val);
+                                }
+                                todos.Add(newtodo);
+                            }
+                        }
+                    }
+                    if (todos.Any())
+                    {
+                        NOPE! this would contiously reset the timestamps!
+                        Vector3I bid = b.Position;
+                        if (pendingTasks.ContainsKey(bid))
+                            pendingTasks.Remove(bid);
+                        pendingTasks.Add(bid, todos);
+                    }
+                }
+
+            }
+        }
 
         public void Main(string argument)
         {
-            Config.ConfigSection config = Config.Section(Me, SectionName);
-            config.Get("OpenSeconds", ref OpenSeconds);
-            string prefix = config.Get("Prefix", "[#");
-            string suffix = config.Get("Suffix", "]");
-            string consoletag = config.Get("ConsoleTo", "##EDC##");
-            bool useecho = config.Get("Echo", true);
-            bool useself = config.Get("Self", true);
-            config.Save();
+            config = new MainConfig(Me);
 
-            console = ConsoleSurface.EasyConsole(this, consoletag, SectionName, useecho, useself);
+            console = ConsoleSurface.EasyConsole(this, config.ConsoleTo, config.ConfigSection, config.Echo, config.Self);
 
-            string sTags = System.Text.RegularExpressions.Regex.Escape(prefix) + @"(.+?)(!?)" + System.Text.RegularExpressions.Regex.Escape(suffix);
+            string sTags = System.Text.RegularExpressions.Regex.Escape(config.Prefix) + @"(.+?)(!?)" + System.Text.RegularExpressions.Regex.Escape(config.Suffix);
             System.Text.RegularExpressions.Regex reTags = new System.Text.RegularExpressions.Regex(sTags);
 
             Emit("Emergency Decompression Control\n-------------------------------");
@@ -414,11 +460,10 @@ namespace IngameScript
                 List<Vector3I> keys = new List<Vector3I>(doorToClose.Keys);
                 for (int i = 0; i < keys.Count; i++)
                 {
-                    if (doorToClose[keys[i]] > ticker + TimeSpan.FromSeconds(OpenSeconds * 2))
+                    if (doorToClose[keys[i]] > ticker + TimeSpan.FromSeconds(config.OpenSeconds * 2))
                     {
                         // Time has gone backwards (probably game loaded) - close door now.
                         doorToClose[keys[i]] = new TimeSpan(0);
-                        ;
                     }
                     else if (doorToClose[keys[i]] < ticker)
                     {
@@ -428,72 +473,39 @@ namespace IngameScript
                 }
             }
             ticker += Runtime.TimeSinceLastRun;
-            if (argument == "test")
-            {
-                List<IMyDoor> blks = GetBlocks.ByName<IMyDoor>("Shutter");
-                for (int i = 0; i < blks.Count; i++)
-                {
-                    blks[i].CustomName = blks[i].CustomName + " " + prefix + "ControlRoom" + suffix;
-                }
-            }
-            Dictionary<string, int> newrooms = new Dictionary<string, int>();
-            List<IMyAirVent> vents = GetBlocks.ByName<IMyAirVent>(prefix);
+            roomsStates.Start();
+            List<IMyAirVent> vents = GetBlocks.ByName<IMyAirVent>(config.Prefix);
             for (int i = 0; i < vents.Count; i++)
             {
                 IMyAirVent vent = vents[i];
-                int vstate = vent.CanPressurize ? 0 : 1;
+                RoomState vstate = vent.CanPressurize ? RoomState.SEALED : RoomState.LEAKING;
                 if (vent.Depressurize)
-                    vstate = 1;
+                    vstate = RoomState.LEAKING;
                 System.Text.RegularExpressions.MatchCollection matches = reTags.Matches(vent.CustomName);
                 for (int m = 0; m < matches.Count; m++)
                 {
                     System.Text.RegularExpressions.Match match = matches[m];
                     string roomname = match.Groups[1].Captures[0].Value;
-                    if (newrooms.ContainsKey(roomname))
-                    {
-                        newrooms[roomname] += vstate;
-                    }
+                    if (vstate == RoomState.LEAKING)
+                        roomsStates.Leaking(roomname);
                     else
-                    {
-                        newrooms.Add(roomname, vstate);
-                    }
+                        roomsStates.Sealed(roomname);
                 }
             }
-            if (rooms.Count == 0)
+
+            roomsStates.CalcChanged();
+            foreach (IMyTerminalBlock block in GetBlocks.ByName<IMyTerminalBlock>(config.Prefix))
             {
-                // Shortcut for first run:
-                rooms = newrooms;
-                return;
+                ProcessBlock(block);
             }
-            List<string> roomKeys = new List<string>(rooms.Keys);
-            for (int i = 0; i < roomKeys.Count; i++)
-            {
-                string roomKey = roomKeys[i];
-                if (!newrooms.ContainsKey(roomKey))
-                    continue;
-                bool wasSealed = rooms[roomKey] == 0;
-                bool isSealed = newrooms[roomKey] == 0;
-                if (isSealed)
-                    Emit(roomKey + " is presurised");
-                else
-                    Emit(roomKey + " is leaking");
-                if (wasSealed == isSealed)
-                    continue;
-                /*if (isSealed)
-                {
-                    Emit(roomKey + " has represurised");
-                    //RunActions(getObjectsByName<IMyInteriorLight>(prefix + roomKey + suffix), "OnOff_Off");
-                    //RunActions(getObjectsByName<IMyInteriorLight>(prefix + roomKey + "!" + suffix), "OnOff_On");
-                }
-                else
-                {
-                    //RunActions(getObjectsByName<IMyInteriorLight>(prefix + roomKey + suffix), "OnOff_On");
-                    //RunActions(getObjectsByName<IMyInteriorLight>(prefix + roomKey + "!" + suffix), "OnOff_Off");
-                }*/
-                updateLights(GetBlocks.ByName<IMyInteriorLight>(prefix + roomKey + suffix), isSealed, false);
-                updateLights(GetBlocks.ByName<IMyInteriorLight>(prefix + roomKey + "!" + suffix), isSealed, true);
-            }
-            Emit(roomKeys.Count + " rooms found");
+
+            //foreach (KeyValuePair<string, RoomState> room in roomsStates.ChangedRooms)
+            //{
+            //    List<IMyTerminalBlock> things = GetRoomBlocks(room.Key);
+            //    things.ForEach(b => ProcessBlock(b));
+            //}
+            Emit(roomsStates.Count + " rooms found");
+            //jfdkjflwjlf
             List<IMyDoor> doors = GetBlocks.ByName<IMyDoor>(prefix);
             for (int i = 0; i < doors.Count; i++)
             {
