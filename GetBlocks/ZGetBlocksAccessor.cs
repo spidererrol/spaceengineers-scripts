@@ -22,7 +22,7 @@ namespace IngameScript
     {
         private GetBlocksClass getBlocks;
        
-        public GetBlocksClass GetBlocks
+        GetBlocksClass GetBlocks
         {
             get {
                 if (getBlocks == null)
