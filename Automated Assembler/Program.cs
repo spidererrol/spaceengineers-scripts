@@ -320,6 +320,9 @@ namespace IngameScript
             }
         }
 
+        double factor = 1.0;
+        double maxqueue = Double.PositiveInfinity;
+
         List<string> ParseCommand(string command, string commandline, int maxparts = 0) => ParseCommand(commandline.Trim().Remove(0, command.Length).TrimStart(), maxparts);
 
         /// <summary>
@@ -424,6 +427,12 @@ namespace IngameScript
                     case "debug":
                         EnableDebug = true;
                         break;
+                    case "maxqueue":
+                        maxqueue = HUnit(command[1]);
+                        break;
+                    case "factor":
+                        double.TryParse(command[1], out factor);
+                        break;
                     case "no":
                         switch (command[1].ToLower())
                         {
@@ -435,6 +444,12 @@ namespace IngameScript
                                 break;
                             case "debug":
                                 EnableDebug = false;
+                                break;
+                            case "maxqueue":
+                                maxqueue = Double.PositiveInfinity;
+                                break;
+                            case "factor":
+                                factor = 1.0;
                                 break;
                             default:
                                 Status("ERROR - Unknown command: " + commandline);
@@ -1031,20 +1046,67 @@ namespace IngameScript
             // I used to check the single builditem for ingredients here but I think that is now
             // obsolete.
 
-            Debug("Schedule assemblers");
+            Debug("Scanning assemblers");
+            Dictionary<string, int> queued = new Dictionary<string, int>();
+            bool haveEmpty = false;
+            bool haveFull = false;
+            int maxitem = 0;
             foreach (IMyAssembler ass in assemblers)
             {
+                Debug("[" + ass.CustomName + "]");
+                List<KeyValuePair<string, int>> assqueue = GetQueue(ass);
+                if (assqueue.Count == 0)
+                {
+                    Debug(string.Format("isEmpty:{0}", assqueue.Count));
+                    haveEmpty = true;
+                }
+                else
+                {
+                    Debug(string.Format("isFull:{0}",assqueue.Count));
+                    haveFull = true;
+                }
+                for (int q = 0; q < assqueue.Count; q++)
+                {
+                    KeyValuePair<string, int> item = assqueue[q];
+                    if (!need.ContainsKey(item.Key))
+                    {
+                        Status(string.Format("-{0}={1}", SimplifyComponent(item.Key), item.Value));
+                        ass.RemoveQueueItem(q, (double)item.Value);
+                        continue;
+                    }
+                    if (queued.ContainsKey(item.Key))
+                        queued[item.Key] += item.Value;
+                     else
+                        queued.Add(item.Key,item.Value);
+                    if (item.Value > maxitem)
+                        maxitem = item.Value;
+                }
+            }
+
+            Debug("Schedule assemblers");
+            int asscount = assemblers.Count() + 1;
+            bool reset = haveEmpty && haveFull && maxitem >= asscount;
+            if (reset)
+            {
+                Status("New or empty assembler detected - resetting queues.");
+                queued.Clear();
+            }
+            foreach (IMyAssembler ass in assemblers)
+            {
+                asscount--;
                 Status("[" + ass.CustomName + "]");
                 List<KeyValuePair<string, int>> assqueue = GetQueue(ass);
                 ISet<string> inQueue = new HashSet<string>();
                 for (int q = 0; q < assqueue.Count; q++)
                 {
                     KeyValuePair<string, int> item = assqueue[q];
-                    inQueue.Add(item.Key);
-                    if (!need.ContainsKey(item.Key))
+                    if (reset || !need.ContainsKey(item.Key))
                     {
                         Status(string.Format("-{0}={1}", SimplifyComponent(item.Key), item.Value));
                         ass.RemoveQueueItem(q, (double)item.Value);
+                    } else
+                    {
+                        inQueue.Add(item.Key);
                     }
                 }
 
@@ -1054,11 +1116,23 @@ namespace IngameScript
                         continue;
                     MyDefinitionId def = ItemToDefinitionId(nv.Key);
                     double dBuildCount = nv.Value;
-                    //dBuildCount /= assemblers.Count;
-                    dBuildCount *= 0.1;
-                    Status(string.Format("+{0}={1}", SimplifyComponent(nv.Key), nv.Value));
-                    ass.AddQueueItem(def, Math.Ceiling(dBuildCount));
+                    if (queued.ContainsKey(nv.Key))
+                        dBuildCount -= queued[nv.Key];
+                    dBuildCount /= asscount;
+                    dBuildCount = Math.Floor(dBuildCount);
+                    dBuildCount *= factor;
+                    if (dBuildCount > maxqueue)
+                        dBuildCount = maxqueue;
+                    if (dBuildCount <= 0.0)
+                        continue;
+                    dBuildCount = Math.Ceiling(dBuildCount);
+                    Status(string.Format("+{0}={1} ({2})", SimplifyComponent(nv.Key), dBuildCount, nv.Value));
+                    ass.AddQueueItem(def, dBuildCount);
                     inQueue.Add(nv.Key);
+                    if (queued.ContainsKey(nv.Key))
+                        queued[nv.Key] += Convert.ToInt32(dBuildCount);
+                    else
+                        queued.Add(nv.Key, Convert.ToInt32(dBuildCount));
                 }
 
                 Status(inQueue.Count + " jobs in queue");
