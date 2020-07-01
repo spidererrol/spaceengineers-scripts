@@ -20,10 +20,9 @@ namespace IngameScript
 {
     partial class Program : MyGridProgram
     {
-        // AutomatedAssembler.cs
-        // Automated Assembler v2.4
+        // REMINDER: Update version in Readme.cs
         #region mdk macros
-        // Deployed: $MDK_DATETIME$
+        private const string BUILDTIME = "$MDK_DATETIME$";
         #endregion mdk macros
 
         public Program()
@@ -31,7 +30,7 @@ namespace IngameScript
             Runtime.UpdateFrequency = UpdateFrequency.Update100;
         }
 
-        const string default_component_maintype = "MyObjectBuilder_BlueprintDefinition";
+        private const string default_component_maintype = "MyObjectBuilder_BlueprintDefinition";
         private const string DebugTag = "[AutomatedAssembler-Debug]";
 
         // Map item names to what assemblers need to see:
