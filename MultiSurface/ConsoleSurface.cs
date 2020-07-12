@@ -169,6 +169,51 @@ namespace IngameScript
                 }
             }
 
+            /// <summary>
+            /// This takes a 3+3+3 bit color and produces a character that with MONOSPACE font will be a solid square of the requested color.
+            /// Note that there aren't any color-change codes (as far as I know).
+            /// </summary>
+            /// <param name="r">A red level between 0 and 7</param>
+            /// <param name="g">A green level between 0 and 7</param>
+            /// <param name="b">A blue level between 0 and 7</param>
+            /// <returns>A solid square character of that color (MONOSPACE font!)</returns>
+            public char ColorToChar(byte r, byte g, byte b)
+            {
+                int code = 0;
+                code = r & 7;
+                code <<= 3;
+                code += g & 7;
+                code <<= 3;
+                code += b & 7;
+                code += 0xe100;
+                return (char)code;
+            }
+
+            /// <summary>
+            /// Display a "warning" message.
+            /// 
+            /// May be filtered to various outputs based on log-level settings (not yet implemented).
+            /// </summary>
+            /// <param name="msg"></param>
+            public void Warn(string msg)
+            {
+                //Echo("\x1b[33;1m" + msg + "\x1b[39m"); // Nope: Doesn't work. Control characters on screen (all fonts).
+                Echo("Warning: " + msg);
+                //Echo(ColorToChar(7, 7, 0) + msg + ColorNormalChar()); // Nope: Solid blocks either side of normal colored msg.
+            }
+            /// <summary>
+            /// Display an "error" message.
+            /// 
+            /// May be filtered to various outputs based on log-level settings (not yet implemented).
+            /// </summary>
+            /// <param name="msg"></param>
+            public void Err(string msg)
+            {
+                //Echo("\x1b[31;1m" + msg + "\x1b[39m");
+                Echo("Error: " + msg);
+                //Echo(ColorToChar(7, 0, 0) + msg + ColorNormalChar());
+            }
+
             public void DumpPA(IMyTerminalBlock block)
             {
                 List<ITerminalProperty> props = new List<ITerminalProperty>();
