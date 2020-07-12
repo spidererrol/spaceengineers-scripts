@@ -171,6 +171,13 @@ namespace IngameScript
                 return allblocks;
             }
 
+            /// <summary>
+            /// Return all blocks of specified type that are in the specified group.
+            /// </summary>
+            /// <typeparam name="IType">Type to limit to</typeparam>
+            /// <param name="groupname">Name of group to search</param>
+            /// <param name="thisgrid">Only search the current grid</param>
+            /// <returns>List of matching blocks</returns>
             public List<IType> OfGroup<IType>(string groupname, bool thisgrid = true)
             {
                 IMyBlockGroup group = GridTerminalSystem.GetBlockGroupWithName(groupname);
