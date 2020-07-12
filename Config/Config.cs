@@ -16,21 +16,16 @@ using VRage.Game.ObjectBuilders.Definitions;
 using VRage.Game;
 using VRageMath;
 
-namespace IngameScript
-{
-    partial class Program
-    {
+namespace IngameScript {
+    partial class Program {
 
         /// <summary>
         /// Handle storing configuration on an <see cref="IMyTerminalBlock"/> in <see cref="MyIni"/> format.
         /// </summary>
-        public class Config : MyIni
-        {
+        public class Config : MyIni {
             public static readonly System.Text.RegularExpressions.Regex reWebColor = new System.Text.RegularExpressions.Regex(@"^#?([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$");
-            public static Color WebColor(string col)
-            {
-                switch (col.ToLower())
-                {
+            public static Color WebColor(string col) {
+                switch (col.ToLower()) {
                     case "aliceblue":
                         return Color.AliceBlue;
                     case "antiquewhite":
@@ -313,8 +308,7 @@ namespace IngameScript
                         return Color.YellowGreen;
                 }
                 System.Text.RegularExpressions.MatchCollection matches = reWebColor.Matches(col);
-                foreach (System.Text.RegularExpressions.Match match in matches)
-                {
+                foreach (System.Text.RegularExpressions.Match match in matches) {
                     string red = match.Groups[1].Captures[0].Value;
                     string green = match.Groups[2].Captures[0].Value;
                     string blue = match.Groups[3].Captures[0].Value;
@@ -322,8 +316,7 @@ namespace IngameScript
                 }
                 return Color.Transparent;
             }
-            public static string WebColor(Color col)
-            {
+            public static string WebColor(Color col) {
                 if (col == Color.AliceBlue) return "AliceBlue";
                 if (col == Color.AntiqueWhite) return "AntiqueWhite";
                 if (col == Color.Aqua) return "Aqua";
@@ -472,8 +465,7 @@ namespace IngameScript
             /// <summary>
             /// This represents a single section within a <see cref="IngameScript.Config"/>.
             /// </summary>
-            public class ConfigSection : IConfigSection
-            {
+            public class ConfigSection : IConfigSection {
                 private readonly Config parent;
                 private readonly string section;
 
@@ -482,8 +474,7 @@ namespace IngameScript
                 /// </summary>
                 /// <param name="myParent">Parent <see cref="IngameScript.Config"/></param>
                 /// <param name="mySection">Section to use within the config.</param>
-                public ConfigSection(Config myParent, string mySection)
-                {
+                public ConfigSection(Config myParent, string mySection) {
                     parent = myParent;
                     section = mySection;
                 }
@@ -492,8 +483,7 @@ namespace IngameScript
                 /// </summary>
                 /// <param name="start">An <see cref="IMyTerminalBlock"/> to get the config from.</param>
                 /// <param name="mySection">Section to use within the config.</param>
-                public ConfigSection(IMyTerminalBlock start, string mySection)
-                {
+                public ConfigSection(IMyTerminalBlock start, string mySection) {
                     parent = new Config(start);
                     section = mySection;
                 }
@@ -502,8 +492,7 @@ namespace IngameScript
                 /// </summary>
                 /// <param name="start">String form of configuration</param>
                 /// <param name="mySection">Section to use within the config.</param>
-                public ConfigSection(string start, string mySection)
-                {
+                public ConfigSection(string start, string mySection) {
                     parent = new Config(start);
                     section = mySection;
                 }
@@ -515,8 +504,7 @@ namespace IngameScript
                 /// </remarks>
                 /// <param name="start"><see cref="MyIni"/> to initialise the configuration</param>
                 /// <param name="mySection">Section to use within the config.</param>
-                public ConfigSection(MyIni start, string mySection)
-                {
+                public ConfigSection(MyIni start, string mySection) {
                     parent = new Config(start);
                     section = mySection;
                 }
@@ -555,32 +543,27 @@ namespace IngameScript
                 /// <param name="key">Key to retrieve</param>
                 /// <param name="defaultvalue">Default value if key is missing.</param>
                 /// <returns>value of key or default value.</returns>
-                public string Get(string key, string defaultvalue)
-                {
+                public string Get(string key, string defaultvalue) {
                     if (!ContainsKey(key))
                         Set(key, defaultvalue);
                     return parent.Get(section, key).ToString();
                 }
-                public int Get(string key, int defaultvalue)
-                {
+                public int Get(string key, int defaultvalue) {
                     if (!ContainsKey(key))
                         Set(key, defaultvalue);
                     return parent.Get(section, key).ToInt32();
                 }
-                public float Get(string key, float defaultvalue)
-                {
+                public float Get(string key, float defaultvalue) {
                     if (!ContainsKey(key))
                         Set(key, defaultvalue);
                     return parent.Get(section, key).ToSingle();
                 }
-                public bool Get(string key, bool defaultvalue)
-                {
+                public bool Get(string key, bool defaultvalue) {
                     if (!ContainsKey(key))
                         Set(key, defaultvalue);
                     return parent.Get(section, key).ToBoolean(defaultvalue);
                 }
-                public Color Get(string key, Color defaultvalue)
-                {
+                public Color Get(string key, Color defaultvalue) {
                     if (!ContainsKey(key))
                         Set(key, defaultvalue);
                     return GetColor(key);
@@ -629,8 +612,7 @@ namespace IngameScript
                 /// <exception cref="NoBlockSpecified">Thrown if this config was not created using an <see cref="IMyTerminalBlock"/></exception>
                 public void Save() => parent.Save();
 
-                public List<string> GetKeys()
-                {
+                public List<string> GetKeys() {
                     List<MyIniKey> iniKeys = new List<MyIniKey>();
                     parent.GetKeys(iniKeys);
                     return iniKeys.FindAll(ik => ik.Section == section).ConvertAll(ik => ik.Name);
@@ -648,8 +630,7 @@ namespace IngameScript
             /// </summary>
             /// <param name="set">set Suppress mode or not</param>
             /// <returns>Previous suppress mode</returns>
-            public bool SuppressComments(bool set = true)
-            {
+            public bool SuppressComments(bool set = true) {
                 bool ret = suppressComments;
                 if (ret != set)
                     deleteComments.Clear();
@@ -672,8 +653,7 @@ namespace IngameScript
             /// Additionally block is stored to be used with <see cref="Save()"/> later on.
             /// </summary>
             /// <param name="block">The <see cref="IMyTerminalBlock"/> to retrieve the config from.</param>
-            public Config(IMyTerminalBlock block) : this()
-            {
+            public Config(IMyTerminalBlock block) : this() {
                 termBlock = block;
                 Load(block);
             }
@@ -682,8 +662,7 @@ namespace IngameScript
             /// Parse configuration from a string.
             /// </summary>
             /// <param name="defaultini">string containing config.</param>
-            public Config(string defaultini) : this()
-            {
+            public Config(string defaultini) : this() {
                 Load(defaultini);
             }
             /// <summary>
@@ -693,8 +672,7 @@ namespace IngameScript
             /// The <see cref="MyIni"/> will be copied and will not recieve updates.
             /// </remarks>
             /// <param name="defaultini"><see cref="MyIni"/> to base config on.</param>
-            public Config(MyIni defaultini) : this()
-            {
+            public Config(MyIni defaultini) : this() {
                 Load(defaultini);
             }
             /// <summary>
@@ -703,8 +681,7 @@ namespace IngameScript
             /// <remarks>
             /// You can then use <see cref="Load(IMyTerminalBlock)"/> to load a config if desired.
             /// </remarks>
-            public Config() : base()
-            {
+            public Config() : base() {
                 suppressComments = false;
                 deleteComments = new HashSet<string>();
             }
@@ -717,10 +694,8 @@ namespace IngameScript
             /// Will clear any existing configuration first.
             /// </remarks>
             /// <param name="block"></param>
-            public void Load(IMyTerminalBlock block)
-            {
-                if (block.CustomData.Length == 0)
-                {
+            public void Load(IMyTerminalBlock block) {
+                if (block.CustomData.Length == 0) {
                     block.CustomData = this.ToString();
                 }
                 this.Clear();
@@ -735,8 +710,7 @@ namespace IngameScript
             /// ini.
             /// </remarks>
             /// <param name="defaultini"><see cref="MyIni"/> to load from.</param>
-            public void Load(MyIni defaultini)
-            {
+            public void Load(MyIni defaultini) {
                 this.Clear();
                 this.TryParse(defaultini.ToString());
                 original = this.ToString();
@@ -745,8 +719,7 @@ namespace IngameScript
             /// Load configuration from a string.
             /// </summary>
             /// <param name="defaultini">string containing config.</param>
-            public void Load(string defaultini)
-            {
+            public void Load(string defaultini) {
                 this.Clear();
                 this.TryParse(defaultini);
                 original = this.ToString();
@@ -770,27 +743,23 @@ namespace IngameScript
             /// Save the current configuration to the given block.
             /// </summary>
             /// <param name="block"></param>
-            public void Save(IMyTerminalBlock block)
-            {
+            public void Save(IMyTerminalBlock block) {
                 string output = this.ToString();
                 if (deleteComments.Any())
                     output = string.Join("\n", new List<string>(output.Split('\n')).FindAll(l => !deleteComments.Contains(l.Length > 1 ? l.Substring(1) : l)));
-                if (output != original)
-                {
+                if (output != original) {
                     block.CustomData = output;
                     original = output;
                 }
             }
-            public class NoBlockSpecified : Exception
-            {
+            public class NoBlockSpecified : Exception {
                 public NoBlockSpecified(string msg) : base(msg) { }
             }
             /// <summary>
             /// Save to the block that this config was created with.
             /// </summary>
             /// <exception cref="NoBlockSpecified">Thrown if this config was not created using an <see cref="IMyTerminalBlock"/></exception>
-            public void Save()
-            {
+            public void Save() {
                 if (termBlock != null)
                     Save(termBlock);
                 else
@@ -802,22 +771,19 @@ namespace IngameScript
             /// </summary>
             /// <param name="section">Name of section to connect to</param>
             /// <returns>Object representing the specified section.</returns>
-            public ConfigSection Section(string section)
-            {
+            public ConfigSection Section(string section) {
                 return new ConfigSection(this, section);
             }
 
             public void DeleteComment(string section, string key, string comment) => deleteComments.Add(comment);
             public void DeleteComment(MyIniKey key, string comment) => DeleteComment(key.Section, key.Name, comment);
-            public new void SetComment(string section, string key, string comment)
-            {
+            public new void SetComment(string section, string key, string comment) {
                 if (suppressComments)
                     DeleteComment(section, key, comment);
                 else
                     base.SetComment(section, key, comment);
             }
-            public new void SetComment(MyIniKey key, string comment)
-            {
+            public new void SetComment(MyIniKey key, string comment) {
                 if (suppressComments)
                     DeleteComment(key, comment);
                 else
