@@ -59,7 +59,7 @@ namespace IngameScript
             /// You shouldn't put <paramref name="consoleTag"/> on the current Programming Block if you have <paramref name="onSelf"/> set as you will likely
             /// get dual output.
             /// </remarks>
-            /// <param name="prog">(REQUIRED) should be <c>this</c></param>
+            /// <param name="prog">(REQUIRED) should be "<c>this</c>"</param>
             /// <param name="consoleTag">What other blocks must have in their CustomName in order to use their screen(s)</param>
             /// <param name="sectionName">The configuration section name to use when enabling individual screens from CustomData</param>
             /// <param name="useEcho">Use <c>Echo(...)</c> to output to the Programming Block interface</param>
