@@ -753,6 +753,20 @@ namespace IngameScript
             }
 
             /// <summary>
+            /// Reload the config from the current block, discarding any changes or default settings.
+            /// </summary>
+            /// <exception cref="NoBlockSpecified">Thrown if this config was not created using an <see cref="IMyTerminalBlock"/></exception>
+            public void Reload() {
+                if (termBlock != null)
+                    Load(termBlock);
+                else
+                    throw new NoBlockSpecified("Trying to reload without having a block to load from!");
+            }
+            public void Reload(IMyTerminalBlock block) => Load(block);
+            public void Reload(MyIni ini) => Load(ini);
+            public void Reload(string ini) => Load(ini);
+
+            /// <summary>
             /// Save the current configuration to the given block.
             /// </summary>
             /// <param name="block"></param>
