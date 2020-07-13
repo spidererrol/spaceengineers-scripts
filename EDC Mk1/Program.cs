@@ -125,19 +125,18 @@ namespace IngameScript {
 
         ConsoleSurface console;
 
-        CompartmentCounts GetCompartments(IMyTerminalBlock block) {
+        CompartmentCounts GetCompartments(IMyTerminalBlock block, ref HashSet<string> names) {
             string remaining = block.CustomName;
-            //console.Echo("Door: " + remaining);
             string prev = "";
             CompartmentCounts counts = new CompartmentCounts();
             while (remaining.Contains(tagSequence) && prev != remaining) {
                 prev = remaining;
                 string _junk = GetUntil(ref remaining, tagSequence);
                 string compartment = GetUntil(ref remaining, tagEnd);
-                string options = "";
-                if (compartment.Contains(tagSep)) {
-                    options = compartment;
-                    compartment = GetUntil(ref options, tagSep);
+                if (compartment == null) {
+                    // No end tag.
+                    console.Warn("Unclosed tag on " + block.CustomName);
+                    continue; // I could try using the name but it might be partial so I'll just ignore it completely!
                 }
 
                 List<string> compkeys;
@@ -157,6 +156,8 @@ namespace IngameScript {
                         continue;
                     }
 
+                    names.Add(compkey);
+
                     switch (compartments[compkey].status) {
                         case VentStatus.Depressurized:
                         case VentStatus.Depressurizing:
@@ -175,6 +176,10 @@ namespace IngameScript {
                 console.Err("Failed to find changes: " + remaining);
             }
             return counts;
+        }
+        CompartmentCounts GetCompartments(IMyTerminalBlock block) {
+            HashSet<string> names = new HashSet<string>();
+            return GetCompartments(block, ref names);
         }
 
         string GetUntil(ref string remaining, params string[] terms) {
@@ -340,7 +345,8 @@ namespace IngameScript {
                 if (Utility.IsType<IMyAirVent>(block)) continue;
                 if (Utility.IsType<IMySoundBlock>(block)) continue;
                 if (Utility.IsType<IMyDoor>(block)) continue;
-                CompartmentCounts counts = GetCompartments(block);
+                HashSet<string> compartmentNames = new HashSet<string>();
+                CompartmentCounts counts = GetCompartments(block, ref compartmentNames);
                 // I have thoughts for customisable Good/Bad states, but then I have to use them to detect states too.
                 Config lconf = new Config(block);
                 IConfigSection section;
