@@ -397,6 +397,52 @@ namespace IngameScript {
                             continue;
                         SetProp(block, section, prop);
                     }
+                    int a = 1;
+                    while (section.ContainsKey(a.ToString())) {
+                        string fullAction = section.GetString(a.ToString());
+                        a++;
+                        string actionName = GetUntil(ref fullAction, "(");
+                        if (actionName == null) {
+                            actionName = fullAction;
+                            fullAction = null;
+                        }
+                        ITerminalAction action = block.GetActionWithName(actionName);
+                        if (action == null) {
+                            console.Err("Invalid action '" + actionName + "' requested on block '" + block.CustomName + "'");
+                            continue;
+                        }
+                        List<TerminalActionParameter> taps = new List<TerminalActionParameter>();
+                        if (fullAction != null) {
+                            fullAction = fullAction.TrimEnd(')');
+                            while (fullAction != null && fullAction.Length > 0) {
+                                string param;
+                                char quotechar = (char)0;
+                                if (fullAction[0] == '"' || fullAction[0] == '\'')
+                                    quotechar = fullAction[0];
+                                if (quotechar != 0) {
+                                    fullAction = fullAction.Substring(1);
+                                    param = GetUntil(ref fullAction, quotechar.ToString());
+                                    if (param != null && fullAction[0] == ',')
+                                        fullAction = fullAction.Substring(1);
+                                } else {
+                                    param = GetUntil(ref fullAction, ",");
+                                }
+                                if (param == null) {
+                                    param = fullAction;
+                                    fullAction = "";
+                                }
+                                if (quotechar == 0) {
+                                    //TODO: A replacement for just the compartments which match/don't match the current state?
+                                    param = param.Replace("<state>", statename).Replace("<compartments>", string.Join(",", compartmentNames));
+                                }
+                                taps.Add(TerminalActionParameter.Get(param));
+                            }
+                        }
+                        if (taps.Count > 0)
+                            action.Apply(block, taps);
+                        else
+                            action.Apply(block);
+                    }
                 }
             }
 
