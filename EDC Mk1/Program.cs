@@ -45,6 +45,9 @@ namespace IngameScript {
             public int pcomps = 0;
             public int dcomps = 0;
             public int ocomps = 0;
+            public int total() {
+                return pcomps + dcomps + ocomps;
+            }
         }
 
         class CompartmentStatus {
@@ -458,6 +461,12 @@ namespace IngameScript {
                 }
                 CompartmentCounts counts = GetCompartments(door);
 
+                Config dconf = new Config(door);
+                IConfigSection edcSection = dconf.Section("EDC");
+                bool StayClosed = counts.total() == 1;
+                StayClosed = edcSection.Get("StayClosed", StayClosed);
+                dconf.Save();
+
                 DoorStatus doorStatus = door.Status;
                 if (doorStatus == DoorStatus.Closing)
                     doorStatus = DoorStatus.Closed;
@@ -488,14 +497,19 @@ namespace IngameScript {
                 // If dcomps or ocomps then close (as normal)
                 // If pcomps and prevDoorStatus == closed only open if another compartment changed to (and is now staying at) decompressed at the same time?
                 // For now:
+                /*
                 if (counts.pcomps == 1 && counts.dcomps == 0 && counts.ocomps == 0 && doorStatus == DoorStatus.Open)
                     doorStatus = prevDoorStatus; // This should let it stay open if already open or manually opened.
                 if (counts.pcomps == 0 && counts.dcomps == 0 && counts.ocomps == 1 && doorStatus == DoorStatus.Open)
                     doorStatus = prevDoorStatus; // This should let it stay open if already open or manually opened.
+                */
 
                 if (doorStatus != prevDoorStatus) {
                     if (doorStatus == DoorStatus.Open)
-                        door.OpenDoor();
+                        if (StayClosed)
+                            doorStatus = prevDoorStatus;
+                        else
+                            door.OpenDoor();
                     if (doorStatus == DoorStatus.Closed)
                         door.CloseDoor();
                 }
