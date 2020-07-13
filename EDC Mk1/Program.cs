@@ -360,6 +360,10 @@ namespace IngameScript {
                 lconf.Section("EDC").Default("Save Config", false);
                 lconf.Section("EDC").SetComment("Save Config", "Set this to 'true' to save out all properties with their current values");
                 string statename;
+                if (block.CustomData == "" && Utility.IsType<IMyTimerBlock>(block)) {
+                    lconf.Section("DEPRESSURIZED").Default("1", "TriggerNow");
+                    lconf.Section("PRESSURIZED").Default("1", "TriggerNow");
+                }
                 if (counts.ocomps > 0 || counts.dcomps > 0) {
                     section = lconf.Section(statename = "DEPRESSURIZED");
                     if (Utility.IsType<IMyLightingBlock>(block))
