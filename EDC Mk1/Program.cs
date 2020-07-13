@@ -309,8 +309,14 @@ namespace IngameScript {
                         sounder.LoopPeriod = 30 * 60; // 30 minutes.
                         sounder.Play();
                         sounder.CustomData += "ACTIVE:[" + now.AddMinutes(30).ToString() + "]";
+                    } else {
+                        string remain = sounder.CustomData;
+                        string pre = GetUntil(ref remain, "ACTIVE:[");
+                        string dts = GetUntil(ref remain, "]");
+                        DateTime expires = DateTime.Parse(dts);
+                        if (expires <= now)
+                            sounder.CustomData = pre + remain;
                     }
-                    //TODO: Reset to inactive if the stored time has passed (so it will reset the playback).
                 } else if (counts.pcomps > 0) {
                     //if (sounder.DetailedInfo.Contains("Loop timer") && sounder.LoopPeriod > 1) { // DetailedInfo is always blank despite showing things on the UI!
                     if (sounder.CustomData.Contains("ACTIVE:[")) {
