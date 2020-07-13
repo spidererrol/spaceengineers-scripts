@@ -211,6 +211,9 @@ namespace IngameScript {
                     StringBuilder sbVal = prop.As<StringBuilder>().GetValue(block);
                     string sVal = sbVal.ToString();
                     return sVal == section.Get(prop.Id, sVal);
+                case "Int64":
+                    long i64Val = prop.As<long>().GetValue(block);
+                    return i64Val == section.Get(prop.Id, i64Val);
                 default:
                     throw new Exception("I don't know how to handle property type " + prop.TypeName + " for property " + prop.Id);
             }
@@ -235,6 +238,10 @@ namespace IngameScript {
                     string sVal = sbVal.ToString();
                     sbVal = new StringBuilder(section.Get(prop.Id, sVal));
                     prop.As<StringBuilder>().SetValue(block, sbVal);
+                    break;
+                case "Int64":
+                    long i64Val = prop.As<long>().GetValue(block);
+                    prop.As<long>().SetValue(block, section.Get(prop.Id, i64Val));
                     break;
                 default:
                     throw new Exception("I don't know how to handle property type " + prop.TypeName + " for property " + prop.Id);
