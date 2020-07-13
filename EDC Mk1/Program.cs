@@ -203,8 +203,7 @@ namespace IngameScript {
                     return bVal == section.Get(prop.Id, bVal);
                 case "Color":
                     Color cVal = prop.AsColor().GetValue(block);
-                    string csVal = Utility.WebColor(cVal);
-                    return csVal == section.Get(prop.Id, csVal);
+                    return cVal == section.Get(prop.Id, cVal);
                 case "Single":
                     float fVal = prop.AsFloat().GetValue(block);
                     return fVal == section.Get(prop.Id, fVal);
@@ -225,7 +224,7 @@ namespace IngameScript {
                     break;
                 case "Color":
                     Color cVal = prop.AsColor().GetValue(block);
-                    prop.AsColor().SetValue(block, Utility.WebColor(section.Get(prop.Id, Utility.WebColor(cVal))));
+                    prop.AsColor().SetValue(block, section.Get(prop.Id, cVal));
                     break;
                 case "Single":
                     float fVal = prop.AsFloat().GetValue(block);
