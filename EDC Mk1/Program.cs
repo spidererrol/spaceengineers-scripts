@@ -346,16 +346,17 @@ namespace IngameScript {
                 IConfigSection section;
                 lconf.Section("EDC").Default("Save Config", false);
                 lconf.Section("EDC").SetComment("Save Config", "Set this to 'true' to save out all properties with their current values");
+                string statename;
                 if (counts.ocomps > 0 || counts.dcomps > 0) {
-                    section = lconf.Section("DEPRESSURIZED");
+                    section = lconf.Section(statename = "DEPRESSURIZED");
                     if (Utility.IsType<IMyLightingBlock>(block))
                         section.Set("OnOff", section.Get("OnOff", true));
                 } else if (counts.pcomps > 0) {
-                    section = lconf.Section("PRESSURIZED");
+                    section = lconf.Section(statename = "PRESSURIZED");
                     if (Utility.IsType<IMyLightingBlock>(block))
                         section.Set("OnOff", section.Get("OnOff", false));
                 } else {
-                    section = lconf.Section("UNKNOWN");
+                    section = lconf.Section(statename = "UNKNOWN");
                 }
                 lconf.Save();
 
@@ -369,8 +370,20 @@ namespace IngameScript {
                     matches = matches && PropCheck(block, section, prop);
                 }
 
-                if (lconf.Section("EDC").Get("Save Config", false))
+                IConfigSection edc = lconf.Section("EDC");
+
+                if (edc.Get("Save Config", false))
                     lconf.Save();
+
+                bool defaultsave = section.ContainsKey("1");
+                lconf.Reload(); // Prevent dumping all the properties when I just want to save the state.
+                bool savestate = edc.Get("Save State", defaultsave);
+                if (savestate) {
+                    string prevstate = edc.Get("Current State", "NEW");
+                    matches = prevstate == statename;
+                    edc.Set("Current State", statename);
+                    lconf.Save();
+                }
 
                 if (!matches) {
                     foreach (ITerminalProperty prop in properties) {
