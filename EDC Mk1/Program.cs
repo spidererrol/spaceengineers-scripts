@@ -268,7 +268,11 @@ namespace IngameScript {
             edcConfig.SetComment("doorTimeout", "Seconds a door will be left alone after a person has operated it");
             edcConfig.Save();
 
-            console = ConsoleSurface.EasyConsole(this, tagStart + tagName + tagEnd, "Console");
+            bool onSelf = true;
+            if (Me.CustomName.Contains(tagStart + tagName + tagEnd))
+                onSelf = false;
+
+            console = ConsoleSurface.EasyConsole(this, tagStart + tagName + tagEnd, tagName + " Console", onSelf: onSelf);
             console.ClearScreen();
             console.Echo("Emergency Decompression Control Mk.1");
             console.Echo("Build: " + VerString);
