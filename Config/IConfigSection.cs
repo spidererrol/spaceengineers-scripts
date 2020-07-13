@@ -111,21 +111,30 @@ namespace IngameScript
             void Default(string key, bool value);
             void Default(string key, float value);
             void Default(string key, int value);
+            void Default(string key, long value);
+            void Default(string key, Color value);
             void Default(string key, string value);
             void Delete(string key);
             MyIniValue Get(string key);
             bool Get(string key, bool defaultvalue);
             float Get(string key, float defaultvalue);
             int Get(string key, int defaultvalue);
+            long Get(string key, long defaultvalue);
+            Color Get(string key, Color defaultvalue);
             void Get(string key, ref bool value);
             void Get(string key, ref float value);
             void Get(string key, ref int value);
+            void Get(string key, ref long value);
+            void Get(string key, ref Color value);
             void Get(string key, ref string value);
             string Get(string key, string defaultvalue);
             bool GetBool(string key);
             string GetComment(string key);
             float GetFloat(string key);
             int GetInt(string key);
+            long GetInt64(string key);
+            long GetLong(string key);
+            Color GetColor(string key);
             List<string> GetKeys();
             string GetString(string key);
             ConfigSectionKey Key(string key);
@@ -135,6 +144,8 @@ namespace IngameScript
             void Set(string key, float value);
             void Set(string key, int value);
             void Set(string key, string value);
+            void Set(string key, long value);
+            void Set(string key, Color value);
             void SetComment(string key, string comment);
         }
 
@@ -155,6 +166,8 @@ namespace IngameScript
             public abstract float Get(string key, float defaultvalue);
             public abstract int Get(string key, int defaultvalue);
             public abstract string Get(string key, string defaultvalue);
+            public abstract long Get(string key, long defaultvalue);
+            public abstract Color Get(string key, Color defaultvalue);
 
             public virtual ConfigSectionKey Key(string key) => new ConfigSectionKey(this, key);
             public virtual void Default(string key, string value)
@@ -165,17 +178,37 @@ namespace IngameScript
             public virtual void Default(string key, bool value) => Default(key, value.ToString());
             public virtual void Default(string key, float value) => Default(key, value.ToString());
             public virtual void Default(string key, int value) => Default(key, value.ToString());
+            public virtual void Default(string key, long value) => Default(key, value.ToString());
             public virtual void Get(string key, ref bool value) => value = Get(key, value);
             public virtual void Get(string key, ref float value) => value = Get(key, value);
             public virtual void Get(string key, ref int value) => value = Get(key, value);
             public virtual void Get(string key, ref string value) => value = Get(key, value);
+            public virtual void Get(string key, ref long value) => value = Get(key, value);
+            public virtual void Get(string key, ref Color value) => value = Get(key, value);
             public virtual bool GetBool(string key) => Get(key).ToBoolean();
             public virtual float GetFloat(string key) => Get(key).ToSingle();
             public virtual int GetInt(string key) => Get(key).ToInt32();
+            public virtual long GetInt64(string key) => Get(key).ToInt64();
+            public virtual long GetLong(string key) => Get(key).ToInt64();
+            public virtual Color GetColor(string key) {
+                // Need to parse using WebColor.
+                throw new Exception("Not Implemented");
+            }
             public virtual string GetString(string key) => Get(key).ToString();
             public virtual void Set(string key, bool value) => Set(key, value.ToString());
             public virtual void Set(string key, float value) => Set(key, value.ToString());
             public virtual void Set(string key, int value) => Set(key, value.ToString());
+            public virtual void Set(string key, long value) => Set(key, value.ToString());
+
+            public void Default(string key, Color value) {
+                // Need to parse using WebColor.
+                throw new Exception("Not Implemented");
+            }
+
+            public void Set(string key, Color value) {
+                // Need to parse using WebColor.
+                throw new Exception("Not Implemented");
+            }
         }
 
         public abstract class RWConfigSection : AConfigSection
@@ -196,6 +229,14 @@ namespace IngameScript
             {
                 Default(key, defaultvalue);
                 return GetInt(key);
+            }
+            public override long Get(string key, long defaultvalue) {
+                Default(key, defaultvalue);
+                return GetLong(key);
+            }
+            public override Color Get(string key, Color defaultvalue) {
+                Default(key, defaultvalue);
+                return GetColor(key);
             }
             public override string Get(string key, string defaultvalue)
             {
@@ -231,6 +272,16 @@ namespace IngameScript
                 if (!ContainsKey(key))
                     return defaultvalue;
                 return GetString(key);
+            }
+            public override long Get(string key, long defaultvalue) {
+                if (!ContainsKey(key))
+                    return defaultvalue;
+                return GetLong(key);
+            }
+            public override Color Get(string key, Color defaultvalue) {
+                if (!ContainsKey(key))
+                    return defaultvalue;
+                return GetColor(key);
             }
 
             public override void Delete(string key)
@@ -410,6 +461,8 @@ namespace IngameScript
             public virtual void Default(string key, float value) => section.Default(key, value);
             public virtual void Default(string key, int value) => section.Default(key, value);
             public virtual void Default(string key, string value) => section.Default(key, value);
+            public virtual void Default(string key, long value) => section.Default(key, value);
+            public virtual void Default(string key, Color value) => section.Default(key, value);
             public virtual void Delete(string key) => section.Delete(key);
             public virtual MyIniValue Get(string key) => section.Get(key);
             public virtual bool Get(string key, bool defaultvalue) => section.Get(key, defaultvalue);
@@ -420,11 +473,18 @@ namespace IngameScript
             public virtual void Get(string key, ref int value) => section.Get(key, ref value);
             public virtual void Get(string key, ref string value) => section.Get(key, ref value);
             public virtual string Get(string key, string defaultvalue) => section.Get(key, defaultvalue);
+            public virtual long Get(string key, long defaultvalue) => section.Get(key, defaultvalue);
+            public virtual Color Get(string key, Color defaultvalue) => section.Get(key, defaultvalue);
+            public virtual void Get(string key, ref long value) => section.Get(key, ref value);
+            public virtual void Get(string key, ref Color value) => section.Get(key, ref value);
             public virtual bool GetBool(string key) => section.GetBool(key);
+            public virtual Color GetColor(string key) => section.GetColor(key);
             public virtual string GetComment(string key) => section.GetComment(key);
             public virtual float GetFloat(string key) => section.GetFloat(key);
             public virtual int GetInt(string key) => section.GetInt(key);
+            public virtual long GetInt64(string key) => section.GetInt64(key);
             public virtual List<string> GetKeys() => section.GetKeys();
+            public virtual long GetLong(string key) => section.GetLong(key);
             public virtual string GetString(string key) => section.GetString(key);
             public virtual bool IsReadOnly() => section.IsReadOnly();
             public virtual ConfigSectionKey Key(string key) => section.Key(key);
@@ -434,6 +494,8 @@ namespace IngameScript
             public virtual void Set(string key, float value) => section.Set(key, value);
             public virtual void Set(string key, int value) => section.Set(key, value);
             public virtual void Set(string key, string value) => section.Set(key, value);
+            public virtual void Set(string key, long value) => section.Set(key, value);
+            public virtual void Set(string key, Color value) => section.Set(key, value);
             public virtual void SetComment(string key, string comment) => section.SetComment(key, comment);
         }
 

@@ -531,6 +531,7 @@ namespace IngameScript {
                 public void Set(string key, string value) => parent.Set(section, key, value);
                 public void Set(string key, bool value) => parent.Set(section, key, value);
                 public void Set(string key, int value) => parent.Set(section, key, value);
+                public void Set(string key, long value) => parent.Set(section, key, value);
                 public void Set(string key, float value) => parent.Set(section, key, value);
                 public void Set(string key, Color value) => parent.Set(section, key, WebColor(value));
 
@@ -553,6 +554,11 @@ namespace IngameScript {
                         Set(key, defaultvalue);
                     return parent.Get(section, key).ToInt32();
                 }
+                public long Get(string key, long defaultvalue) {
+                    if (!ContainsKey(key))
+                        Set(key, defaultvalue);
+                    return parent.Get(section, key).ToInt64();
+                }
                 public float Get(string key, float defaultvalue) {
                     if (!ContainsKey(key))
                         Set(key, defaultvalue);
@@ -571,6 +577,8 @@ namespace IngameScript {
                 public MyIniValue Get(string key) => parent.Get(section, key);
                 public string GetString(string key) => Get(key).ToString();
                 public int GetInt(string key) => Get(key).ToInt32();
+                public long GetInt64(string key) => Get(key).ToInt64();
+                public long GetLong(string key) => Get(key).ToInt64();
                 public float GetFloat(string key) => Get(key).ToSingle();
                 public bool GetBool(string key) => Get(key).ToBoolean();
                 public Color GetColor(string key) => WebColor(GetString(key));
@@ -582,6 +590,7 @@ namespace IngameScript {
                 /// <param name="value">value to use as default and to update</param>
                 public void Get(string key, ref string value) => value = Get(key, value);
                 public void Get(string key, ref int value) => value = Get(key, value);
+                public void Get(string key, ref long value) => value = Get(key, value);
                 public void Get(string key, ref float value) => value = Get(key, value);
                 public void Get(string key, ref bool value) => value = Get(key, value);
                 public void Get(string key, ref Color value) => value = Get(key, value);
@@ -593,6 +602,7 @@ namespace IngameScript {
                 /// <param name="value">default value to use</param>
                 public void Default(string key, string value) => Get(key, value);
                 public void Default(string key, int value) => Get(key, value);
+                public void Default(string key, long value) => Get(key, value);
                 public void Default(string key, float value) => Get(key, value);
                 public void Default(string key, bool value) => Get(key, value);
                 public void Default(string key, Color value) => Get(key, value);
