@@ -17,10 +17,8 @@ using VRage.Game;
 using VRage;
 using VRageMath;
 
-namespace IngameScript
-{
-    partial class Program : MyGridProgram
-    {
+namespace IngameScript {
+    partial class Program : MyGridProgram {
         // This file contains your actual script.
         //
         // You can either keep all your code here, or you can create separate
@@ -74,14 +72,8 @@ namespace IngameScript
             // 
             // The method itself is required, but the arguments above
             // can be removed if not needed.
-            List<IMyDoor> doors = GetBlocks.OfGroup<IMyDoor>("Hub Roof Shutters");
-            foreach(IMyDoor door in doors) {
-                if (!door.CustomName.Contains("Shutter"))
-                    continue;
-                if (door.CustomName.Contains("[EDC:Hub]"))
-                    continue;
-                door.CustomName += "[EDC:Hub]";
-            }
+            ConsoleSurface console = ConsoleSurface.EasyConsole(this);
+            console.Echo(argument);
         }
     }
 }
