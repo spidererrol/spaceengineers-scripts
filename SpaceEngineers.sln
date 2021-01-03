@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Random Testing", "Random Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Running Lights", "Running Lights\Running Lights.csproj", "{233B804D-BC07-4B6C-B9AA-F06576E912BF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Airlock Control", "Airlock Control\Airlock Control.csproj", "{6CA8DDE4-8F27-49DF-B10C-43CBF2D6494F}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Config\Config.projitems*{233b804d-bc07-4b6c-b9aa-f06576e912bf}*SharedItemsImports = 4
@@ -50,6 +52,10 @@ Global
 		MultiSurface\MultiSurface.projitems*{4c1ef1f3-453b-43b0-8d93-53df99445125}*SharedItemsImports = 4
 		Utility\Utility.projitems*{4c1ef1f3-453b-43b0-8d93-53df99445125}*SharedItemsImports = 4
 		TLib\TLib.projitems*{5d8f5b6d-9402-4623-8caa-4020c90bd33d}*SharedItemsImports = 13
+		Config\Config.projitems*{6ca8dde4-8f27-49df-b10c-43cbf2d6494f}*SharedItemsImports = 4
+		GetBlocks\GetBlocks.projitems*{6ca8dde4-8f27-49df-b10c-43cbf2d6494f}*SharedItemsImports = 4
+		MultiSurface\MultiSurface.projitems*{6ca8dde4-8f27-49df-b10c-43cbf2d6494f}*SharedItemsImports = 4
+		Utility\Utility.projitems*{6ca8dde4-8f27-49df-b10c-43cbf2d6494f}*SharedItemsImports = 4
 		Config\Config.projitems*{6f854aca-53b9-47c8-a4fd-7a014ff82326}*SharedItemsImports = 4
 		GetBlocks\GetBlocks.projitems*{6f854aca-53b9-47c8-a4fd-7a014ff82326}*SharedItemsImports = 4
 		MultiSurface\MultiSurface.projitems*{6f854aca-53b9-47c8-a4fd-7a014ff82326}*SharedItemsImports = 4
@@ -64,6 +70,7 @@ Global
 		Config\Config.projitems*{9d7d1154-faac-4cdc-a1ed-c79b62eadf05}*SharedItemsImports = 4
 		GetBlocks\GetBlocks.projitems*{9d7d1154-faac-4cdc-a1ed-c79b62eadf05}*SharedItemsImports = 4
 		MultiSurface\MultiSurface.projitems*{9d7d1154-faac-4cdc-a1ed-c79b62eadf05}*SharedItemsImports = 4
+		Utility\Utility.projitems*{9d7d1154-faac-4cdc-a1ed-c79b62eadf05}*SharedItemsImports = 4
 		MultiSurface\MultiSurface.projitems*{b50fc0f7-be50-4560-86b8-996f6f1c2d16}*SharedItemsImports = 13
 		StateMachine\StateMachine.projitems*{c96cdc9a-3f22-4185-a130-5788d100251a}*SharedItemsImports = 13
 		Config\Config.projitems*{ec226929-3681-492c-a19d-8546c670f82f}*SharedItemsImports = 4
@@ -106,6 +113,8 @@ Global
 		{9D7D1154-FAAC-4CDC-A1ED-C79B62EADF05}.Debug|x64.Build.0 = Debug|x64
 		{233B804D-BC07-4B6C-B9AA-F06576E912BF}.Debug|x64.ActiveCfg = Debug|x64
 		{233B804D-BC07-4B6C-B9AA-F06576E912BF}.Debug|x64.Build.0 = Debug|x64
+		{6CA8DDE4-8F27-49DF-B10C-43CBF2D6494F}.Debug|x64.ActiveCfg = Debug|x64
+		{6CA8DDE4-8F27-49DF-B10C-43CBF2D6494F}.Debug|x64.Build.0 = Debug|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

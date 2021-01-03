@@ -62,6 +62,79 @@ namespace IngameScript {
             // needed.
         }
 
+        private static readonly System.Text.RegularExpressions.Regex rePosMarks = new System.Text.RegularExpressions.Regex(@"\s*<.*>");
+        private static readonly System.Text.RegularExpressions.Regex reTagMarks = new System.Text.RegularExpressions.Regex(@"\s*\[.*\]");
+        private static readonly System.Text.RegularExpressions.Regex reAddPos = new System.Text.RegularExpressions.Regex(@"!POS");
+
+        public class BlockName {
+            private IMyTerminalBlock terminalBlock;
+            private string currentName;
+            private bool modified => terminalBlock.CustomName != currentName;
+            public string Name {
+                get {
+                    return currentName;
+                }
+                set {
+                    currentName = value;
+                }
+            }
+
+            public BlockName(IMyTerminalBlock block) {
+                terminalBlock = block;
+                currentName = block.CustomName;
+            }
+
+            public void ApplyPos(bool clear = false) {
+                bool wantPos = Contains(reAddPos);
+                bool hasPos = Contains(rePosMarks);
+                if (wantPos && hasPos)
+                    return;
+                if (hasPos && (wantPos || clear)) {
+                    Remove(reAddPos);
+                    Remove(rePosMarks);
+                }
+                if (wantPos && !hasPos) {
+                    Name += " <" + terminalBlock.Position.ToString() + ">";
+                    terminalBlock.ShowOnHUD = true;
+                }
+            }
+            public void ApplyPos(string arg) => ApplyPos(arg == "ClearPOS");
+
+            public void ClearPos() {
+                Remove(rePosMarks);
+            }
+
+            public void ApplyArg(string arg) {
+                if (arg == "ClearPOS")
+                    ClearPos();
+                if (arg == "ClearHUD")
+                    terminalBlock.ShowOnHUD = false;
+            }
+
+            public void ClearTags() => Remove(reTagMarks);
+
+            public bool Contains(string contains) => Name.Contains(contains);
+            public bool Contains(System.Text.RegularExpressions.Regex contains) => contains.Match(Name).Success;
+            public void Replace(string match, string replace) => Name = Name.Replace(match, replace);
+            public void Replace(System.Text.RegularExpressions.Regex match, string replace) => Name = match.Replace(Name, replace);
+            public void Remove(string match) => Replace(match, "");
+            public void Remove(System.Text.RegularExpressions.Regex match) => Replace(match, "");
+
+            public void autoShowOnHUD() {
+                if (Name.Contains("[EDC:"))
+                    terminalBlock.ShowOnHUD = false;
+                else
+                    terminalBlock.ShowOnHUD = true;
+            }
+
+            public void Save() {
+                if (!modified)
+                    return;
+                terminalBlock.CustomName = currentName;
+            }
+
+        }
+
         public void Main(string argument, UpdateType updateSource) {
             // The main entry point of the script, invoked every time
             // one of the programmable block's Run actions are invoked,
@@ -72,8 +145,40 @@ namespace IngameScript {
             // 
             // The method itself is required, but the arguments above
             // can be removed if not needed.
+
             ConsoleSurface console = ConsoleSurface.EasyConsole(this);
             console.Echo(argument);
+            List<IMyAirVent> vents = GetBlocks.ByType<IMyAirVent>();
+            foreach (IMyAirVent vent in vents) {
+                BlockName name = new BlockName(vent);
+                name.ApplyPos(argument);
+                name.autoShowOnHUD();
+
+                name.ApplyArg(argument);
+                name.Save();
+            }
+            List<IMyDoor> doors = GetBlocks.ByType<IMyDoor>();
+            foreach (IMyDoor door in doors) {
+                BlockName name = new BlockName(door);
+                name.ApplyPos(argument);
+                name.autoShowOnHUD();
+
+
+                name.ApplyArg(argument);
+                name.Save();
+            }
+            List<IMyTextPanel> lcds = GetBlocks.ByType<IMyTextPanel>();
+            foreach (IMyTextPanel lcd in lcds) {
+                BlockName name = new BlockName(lcd);
+                name.ApplyPos(argument);
+                name.autoShowOnHUD();
+
+
+                name.ApplyArg(argument);
+                name.Save();
+            }
+            console.ClearScreen();
+            console.Echo("Finished: " + DateTime.Now);
         }
     }
 }

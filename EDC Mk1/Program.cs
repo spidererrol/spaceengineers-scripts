@@ -256,6 +256,8 @@ namespace IngameScript {
             }
         }
 
+        //FIXME: If a vent A is in vacuum but not set to depressurise and vent B is set to depressurise and in vacuum the joining door is closed!
+
         public void Main(string argument, UpdateType updateSource) {
             DateTime now = DateTime.Now;
             Config config = new Config(Me);
