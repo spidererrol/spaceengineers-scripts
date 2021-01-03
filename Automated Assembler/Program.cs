@@ -648,12 +648,13 @@ namespace IngameScript
         }
         bool ParseConfigSurface(IMyTextSurfaceProvider surfaceProvider, string name_or_id)
         {
-            string commandstext = ((IMyTerminalBlock)surfaceProvider).CustomData;
+            IMyTerminalBlock terminalBlock = (IMyTerminalBlock)surfaceProvider;
+            string commandstext = terminalBlock.CustomData;
             if (commandstext == null || commandstext.Length == 0)
                 return false;
             name_or_id = name_or_id.ToLower();
             string short_name_or_id = name_or_id.Replace("showonscreen_", "");
-            //Debug("Checking surface: " + short_name_or_id); // I can't identify the block name from here, so this can get a bit OTT.
+            Debug("Checking surface '" + short_name_or_id + "' of block '" + terminalBlock.CustomName + "'");
             string[] commands = commandstext.Split('\n');
             foreach (string cline in commands)
             {
@@ -669,15 +670,27 @@ namespace IngameScript
                 } else {
                     continue;
                 }
-                if (rest == "enable")
+                if (rest == "enable") {
+                    Debug(" => enable");
                     return true;
-                if (rest == "disable")
+                }
+                if (rest == "disable") {
+                    Debug(" => disable");
                     return false;
+                }
                 bool ret;
-                if (!bool.TryParse(rest, out ret))
+                if (!bool.TryParse(rest, out ret)) {
+                    Debug(" => unknown setting (disable)");
                     return false;
+                }
+                if (ret) {
+                    Debug(" => enable");
+                } else {
+                    Debug(" => disable");
+                }
                 return ret;
             }
+            Debug(" => no match (disable)");
             return false;
         }
 
