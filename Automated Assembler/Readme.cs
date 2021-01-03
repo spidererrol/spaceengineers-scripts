@@ -4,5 +4,5 @@
  * 
  *   See workshop entry for details: https://steamcommunity.com/sharedfiles/filedetails/?id=768156259
  * 
- *   Version: 2.5
+ *   Version: 2.6
  */

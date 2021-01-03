@@ -651,16 +651,28 @@ namespace IngameScript
             string commandstext = ((IMyTerminalBlock)surfaceProvider).CustomData;
             if (commandstext == null || commandstext.Length == 0)
                 return false;
+            name_or_id = name_or_id.ToLower();
+            string short_name_or_id = name_or_id.Replace("showonscreen_", "");
+            //Debug("Checking surface: " + short_name_or_id); // I can't identify the block name from here, so this can get a bit OTT.
             string[] commands = commandstext.Split('\n');
-            foreach (string line in commands)
+            foreach (string cline in commands)
             {
-                if (!line.ToLower().StartsWith("surface "))
+                string line = cline.ToLower();
+                if (!line.StartsWith("surface "))
                     continue;
                 string rest;
                 rest = line.Remove(0, 8).TrimStart();
-                if (!rest.StartsWith(name_or_id + " "))
+                if (rest.StartsWith(name_or_id + " ")) {
+                    rest = rest.Remove(0, name_or_id.Length).Trim();
+                } else if (rest.StartsWith(short_name_or_id + " ")) {
+                    rest = rest.Remove(0, short_name_or_id.Length).Trim();
+                } else {
                     continue;
-                rest = rest.Trim();
+                }
+                if (rest == "enable")
+                    return true;
+                if (rest == "disable")
+                    return false;
                 bool ret;
                 if (!bool.TryParse(rest, out ret))
                     return false;
