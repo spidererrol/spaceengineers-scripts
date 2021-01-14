@@ -87,7 +87,7 @@ namespace IngameScript
         public IDictionary<string, IList<KeyValuePair<string, float>>> ingredients = new Dictionary<string, IList<KeyValuePair<string, float>>>();
 
         // Quotas
-        Dictionary<string, int> quotas = new Dictionary<string, int> {
+        Dictionary<string, int> quotas = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase) {
             {"BulletproofGlass",12000},
             {"Canvas",300 },
             {"Computer",6500},
@@ -116,7 +116,7 @@ namespace IngameScript
         string TAG = "[AUTOMATIC]";
 
         // This is for mapping imported to the values I use:
-        Dictionary<string, string> disp2real = new Dictionary<string, string> {
+        Dictionary<string, string> disp2real = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase) {
             { "Bulletp. Glass","BulletproofGlass" },
             { "GravGen","GravityGenerator" },
             { "Radio-comm","RadioCommunication" },
@@ -895,8 +895,8 @@ namespace IngameScript
 
             Debug("Running");
 
-            Dictionary<string, double> stock = new Dictionary<string, double>();
-            Dictionary<string, double> istock = new Dictionary<string, double>();
+            Dictionary<string, double> stock = new Dictionary<string, double>(StringComparer.InvariantCultureIgnoreCase);
+            Dictionary<string, double> istock = new Dictionary<string, double>(StringComparer.InvariantCultureIgnoreCase);
 
             IList<IMyTerminalBlock> allblocks;
             if (thisgrid)
@@ -927,7 +927,7 @@ namespace IngameScript
                             continue;
                         string subType = thing.Type.SubtypeId.ToString();
                         double amount = (double)thing.Amount;
-                        //Debug("(" + subType + ")");
+                        Debug("(" + mainType + ", " + subType + ")");
                         if (mainType == "Component" || mainType == "AmmoMagazine")
                         {
                             //if (!block.CustomName.Contains("[STOCK]"))
@@ -974,8 +974,8 @@ namespace IngameScript
 
             Debug("Process quotas");
             List<string> quotaKeys = new List<string>(quotas.Keys);
-            Dictionary<string, double> level = new Dictionary<string, double>();
-            Dictionary<string, int> need = new Dictionary<string, int>();
+            Dictionary<string, double> level = new Dictionary<string, double>(StringComparer.InvariantCultureIgnoreCase);
+            Dictionary<string, int> need = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
             foreach (string qKey in quotaKeys)
             {
                 int qVal = quotas[qKey];
@@ -1072,7 +1072,7 @@ namespace IngameScript
             // obsolete.
 
             Debug("Scanning assemblers");
-            Dictionary<string, int> queued = new Dictionary<string, int>();
+            Dictionary<string, int> queued = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
             bool haveEmpty = false;
             bool haveFull = false;
             int maxitem = 0;
