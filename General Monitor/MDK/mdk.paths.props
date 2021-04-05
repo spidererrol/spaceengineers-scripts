@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MDKVersion>1.2.31</MDKVersion>
-    <MDKGameBinPath>X:\SteamLibrary\SteamApps\common\SpaceEngineers\Bin64</MDKGameBinPath>
+    <MDKGameBinPath>N:\SteamLibrary\steamapps\common\SpaceEngineers\Bin64</MDKGameBinPath>
     <MDKInstallPath>c:\users\tim\appdata\local\microsoft\visualstudio\15.0_5f77c758\extensions\4ijg3tou.cej</MDKInstallPath>
     <MDKOutputPath>C:\Users\tim\AppData\Roaming\SpaceEngineers\IngameScripts\local</MDKOutputPath>
   </PropertyGroup>
